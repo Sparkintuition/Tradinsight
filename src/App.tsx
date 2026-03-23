@@ -1,21 +1,28 @@
-import { AuthModal } from './components/AuthModal';
 import { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from './contexts/AuthContext';
 import { LandingPage } from './components/LandingPage';
+import { AuthModal } from './components/AuthModal';
 import { SurveyFunnel } from './components/SurveyFunnel';
 import { SubscriptionPage } from './components/SubscriptionPage';
 import { Dashboard } from './components/Dashboard';
 import { supabase } from './lib/supabase';
 
 type AppFlow = 'landing' | 'survey' | 'subscription' | 'dashboard';
-type AuthMode = 'login' | 'signup';
+type AuthMode = 'signin' | 'signup';
 
 function AppContent() {
   const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('signup');
-  const [flow, setFlow] = useState<AppFlow>('landing');
+  const [flow, setFlow] = useState<AppFlow>(() => {
+    const savedFlow = sessionStorage.getItem('tradinsight_flow') as AppFlow | null;
+    return savedFlow || 'landing';
+  });
   const [checkingFlow, setCheckingFlow] = useState(true);
+
+  useEffect(() => {
+    sessionStorage.setItem('tradinsight_flow', flow);
+  }, [flow]);
 
   useEffect(() => {
     if (!loading && user) {
@@ -83,7 +90,7 @@ function AppContent() {
         <LandingPage
           onGetStarted={handleGetStarted}
           onLogin={() => {
-            setAuthMode('login');
+            setAuthMode('signin');
             setShowAuthModal(true);
           }}
           onSignup={() => {
