@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -6,14 +6,21 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string
+  ) => Promise<{ error: Error | null }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,26 +28,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
+    const initAuth = async () => {
+      setLoading(true);
+
       const {
         data: { session },
+        error,
       } = await supabase.auth.getSession();
 
       if (!mounted) return;
 
-      setSession(session);
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+
+      setSession(session ?? null);
       setUser(session?.user ?? null);
       setLoading(false);
     };
 
-    initializeAuth();
+    initAuth();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
 
-      setSession(session);
+      setSession(session ?? null);
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -51,43 +65,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string
+  ) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    return { error: error as Error | null };
+      if (error) throw error;
+
+      if (data.user) {
+        const { error: profileError } = await supabase.from('profiles').upsert([
+          {
+            id: data.user.id,
+            email: data.user.email,
+            full_name: fullName,
+          },
+        ]);
+
+        if (profileError) throw profileError;
+      }
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    return { error: error as Error | null };
+      if (error) throw error;
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
+    localStorage.removeItem('tradinsight_flow');
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        signUp,
-        signIn,
-        signOut,
-      }}
+      value={{ user, session, loading, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>
@@ -96,8 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used inside AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
