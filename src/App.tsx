@@ -14,57 +14,51 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('signup');
-  const [flow, setFlow] = useState<AppFlow>(() => {
-    const savedFlow = localStorage.getItem('tradinsight_flow') as AppFlow | null;
-    return savedFlow || 'landing';
-  });
+  const [flow, setFlow] = useState<AppFlow | null>(null);
   const [checkingFlow, setCheckingFlow] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('tradinsight_flow', flow);
-  }, [flow]);
+    const resolveFlow = async () => {
+      if (loading) return;
 
-  useEffect(() => {
-    if (!loading && user) {
-      checkUserFlow();
-    } else if (!loading && !user) {
-      const savedFlow = localStorage.getItem('tradinsight_flow') as AppFlow | null;
-      setFlow(savedFlow || 'landing');
-      setCheckingFlow(false);
-    }
-  }, [user, loading]);
-
-  const checkUserFlow = async () => {
-    if (!user) return;
-
-    try {
-      const [surveyResult, subscriptionResult] = await Promise.all([
-        supabase
-          .from('survey_responses')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('user_subscriptions')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .maybeSingle(),
-      ]);
-
-      if (!surveyResult.data) {
-        setFlow('survey');
-      } else if (!subscriptionResult.data) {
-        setFlow('subscription');
-      } else {
-        setFlow('dashboard');
+      if (!user) {
+        setFlow('landing');
+        setCheckingFlow(false);
+        return;
       }
-    } catch (error) {
-      console.error('Error checking user flow:', error);
-    } finally {
-      setCheckingFlow(false);
-    }
-  };
+
+      try {
+        const [surveyResult, subscriptionResult] = await Promise.all([
+          supabase
+            .from('survey_responses')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('user_subscriptions')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .maybeSingle(),
+        ]);
+
+        if (!surveyResult.data) {
+          setFlow('survey');
+        } else if (!subscriptionResult.data) {
+          setFlow('subscription');
+        } else {
+          setFlow('dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking user flow:', error);
+        setFlow('landing');
+      } finally {
+        setCheckingFlow(false);
+      }
+    };
+
+    resolveFlow();
+  }, [user, loading]);
 
   const handleGetStarted = () => {
     if (user) {
@@ -75,7 +69,7 @@ function AppContent() {
     }
   };
 
-  if (loading || checkingFlow) {
+  if (loading || checkingFlow || !flow) {
     return (
       <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
         <div className="text-cyan-400 text-xl font-medium">
