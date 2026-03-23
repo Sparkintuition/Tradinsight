@@ -15,20 +15,21 @@ function AppContent() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('signup');
   const [flow, setFlow] = useState<AppFlow>(() => {
-    const savedFlow = sessionStorage.getItem('tradinsight_flow') as AppFlow | null;
+    const savedFlow = localStorage.getItem('tradinsight_flow') as AppFlow | null;
     return savedFlow || 'landing';
   });
   const [checkingFlow, setCheckingFlow] = useState(true);
 
   useEffect(() => {
-    sessionStorage.setItem('tradinsight_flow', flow);
+    localStorage.setItem('tradinsight_flow', flow);
   }, [flow]);
 
   useEffect(() => {
     if (!loading && user) {
       checkUserFlow();
     } else if (!loading && !user) {
-      setFlow('landing');
+      const savedFlow = localStorage.getItem('tradinsight_flow') as AppFlow | null;
+      setFlow(savedFlow || 'landing');
       setCheckingFlow(false);
     }
   }, [user, loading]);
