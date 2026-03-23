@@ -1,10 +1,16 @@
-import { TrendingUp, Users, ArrowRight } from 'lucide-react';
+import { TrendingUp, Users } from 'lucide-react';
 
 interface LandingPageProps {
   onGetStarted: () => void;
+  onLogin: () => void;
+  onSignup: () => void;
 }
 
-export function LandingPage({ onGetStarted }: LandingPageProps) {
+export function LandingPage({
+  onGetStarted,
+  onLogin,
+  onSignup,
+}: LandingPageProps) {
   return (
     <div className="min-h-screen bg-[#0B0F19]">
       <header className="container mx-auto px-4 py-6">
@@ -16,12 +22,21 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </span>
           </div>
 
-          <button
-            onClick={onGetStarted}
-            className="border border-yellow-500/40 text-yellow-300 px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500/10 transition-colors"
-          >
-            Test Profile
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onLogin}
+              className="text-gray-300 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              Log In
+            </button>
+
+            <button
+              onClick={onSignup}
+              className="border border-[#C69214]/40 text-[#D4A017] px-5 py-2 rounded-lg font-semibold hover:bg-[#C69214]/10 transition-colors"
+            >
+              Sign Up
+            </button>
+          </div>
         </div>
       </header>
 

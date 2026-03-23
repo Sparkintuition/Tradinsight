@@ -1,17 +1,19 @@
+import { AuthModal } from './components/AuthModal';
 import { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from './contexts/AuthContext';
 import { LandingPage } from './components/LandingPage';
-import { AuthModal } from './components/AuthModal';
 import { SurveyFunnel } from './components/SurveyFunnel';
 import { SubscriptionPage } from './components/SubscriptionPage';
 import { Dashboard } from './components/Dashboard';
 import { supabase } from './lib/supabase';
 
 type AppFlow = 'landing' | 'survey' | 'subscription' | 'dashboard';
+type AuthMode = 'login' | 'signup';
 
 function AppContent() {
   const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('signup');
   const [flow, setFlow] = useState<AppFlow>('landing');
   const [checkingFlow, setCheckingFlow] = useState(true);
 
@@ -57,39 +59,59 @@ function AppContent() {
   };
 
   const handleGetStarted = () => {
-  if (user) {
-    setFlow('survey');
-  } else {
-    setShowAuthModal(true);
-  }
-};
+    if (user) {
+      setFlow('survey');
+    } else {
+      setAuthMode('signup');
+      setShowAuthModal(true);
+    }
+  };
 
   if (loading || checkingFlow) {
     return (
       <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
-        <div className="text-cyan-400 text-xl font-medium">Loading Tradinsight...</div>
+        <div className="text-cyan-400 text-xl font-medium">
+          Loading Tradinsight...
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      {flow === 'landing' && <LandingPage onGetStarted={handleGetStarted} />}
+      {flow === 'landing' && (
+        <LandingPage
+          onGetStarted={handleGetStarted}
+          onLogin={() => {
+            setAuthMode('login');
+            setShowAuthModal(true);
+          }}
+          onSignup={() => {
+            setAuthMode('signup');
+            setShowAuthModal(true);
+          }}
+        />
+      )}
+
       {flow === 'survey' && (
-  <SurveyFunnel
-    onComplete={() => setFlow('subscription')}
-    onBack={() => setFlow('landing')}
-  />
-)}
-      {flow === 'subscription' && <SubscriptionPage onComplete={() => setFlow('dashboard')} />}
+        <SurveyFunnel
+          onComplete={() => setFlow('subscription')}
+          onBack={() => setFlow('landing')}
+        />
+      )}
+
+      {flow === 'subscription' && (
+        <SubscriptionPage onComplete={() => setFlow('dashboard')} />
+      )}
+
       {flow === 'dashboard' && (
-  <Dashboard onUnlockPremium={() => setFlow('subscription')} />
-)}
+        <Dashboard onUnlockPremium={() => setFlow('subscription')} />
+      )}
 
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        initialMode="signup"
+        initialMode={authMode}
       />
     </>
   );
