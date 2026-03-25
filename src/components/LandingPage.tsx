@@ -1,27 +1,18 @@
 import { TrendingUp, Users, Shield, Clock, BarChart2, CheckCircle, ArrowRight, Zap, Filter } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
 
 interface LandingPageProps {
   onGetStarted: () => void;
   onLogin: () => void;
   onSignup: () => void;
-  onLogout: () => void;
-  user: User | null;
+  onMethodology?: () => void;
 }
 
 export function LandingPage({
   onGetStarted,
   onLogin,
   onSignup,
-  onLogout,
-  user,
+  onMethodology,
 }: LandingPageProps) {
-  const displayName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email ||
-    'Account';
-
   return (
     <div className="min-h-screen bg-[#0B0F19] font-sans">
 
@@ -32,43 +23,39 @@ export function LandingPage({
             <TrendingUp className="text-cyan-400" size={28} />
             <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
           </div>
-
-          {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-gray-300 text-sm max-w-[220px] truncate">
-                {displayName}
-              </span>
+          <div className="flex items-center gap-3">
+            {onMethodology && (
               <button
-                onClick={onLogout}
-                className="border border-[#1F2937] text-gray-300 px-4 py-2 rounded-lg font-medium hover:text-white hover:border-cyan-400/30 transition-colors text-sm"
+                onClick={onMethodology}
+                className="hidden sm:flex items-center gap-1.5 text-gray-400 hover:text-white text-sm transition-colors"
               >
-                Log Out
+                How it Works
               </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onLogin}
-                className="text-gray-400 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
-              >
-                Log In
-              </button>
-              <button
-                onClick={onSignup}
-                className="border border-[#C69214]/50 text-[#D4A017] px-5 py-2 rounded-lg font-semibold hover:bg-[#C69214]/10 transition-colors text-sm"
-              >
-                Sign Up Free
-              </button>
-            </div>
-          )}
+            )}
+            <button
+              onClick={onLogin}
+              className="text-gray-400 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+            >
+              Log In
+            </button>
+            <button
+              onClick={onSignup}
+              className="border border-[#C69214]/50 text-[#D4A017] px-5 py-2 rounded-lg font-semibold hover:bg-[#C69214]/10 transition-colors text-sm"
+            >
+              Sign Up Free
+            </button>
+          </div>
         </div>
       </header>
 
       {/* ── HERO ── */}
       <section className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-3xl mx-auto text-center relative">
+
+          {/* Glow */}
           <div className="absolute inset-x-0 top-0 mx-auto h-64 w-64 rounded-full bg-cyan-500/8 blur-3xl pointer-events-none" />
 
+          {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 mb-6">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span className="text-cyan-400 text-xs font-semibold tracking-widest uppercase">BTC Signal Platform</span>
@@ -96,12 +83,13 @@ export function LandingPage({
               onClick={onGetStarted}
               className="bg-[#D4A017] text-black px-8 py-4 rounded-lg font-semibold text-base hover:bg-[#E6B325] transition-colors inline-flex items-center gap-2 shadow-lg shadow-black/30"
             >
-              See if this Fits Your Style
+              See If This Fits Your Style
               <ArrowRight size={16} />
             </button>
             <span className="text-gray-500 text-sm">Takes 2 minutes · Free to start</span>
           </div>
 
+          {/* Trust tags */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-xs relative">
             {[
               'BTC-only',
@@ -142,6 +130,7 @@ export function LandingPage({
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
+            {/* Step 1 */}
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 relative hover:border-cyan-500/30 transition-colors">
               <div className="text-cyan-400 mb-4">
                 <BarChart2 size={28} />
@@ -153,6 +142,7 @@ export function LandingPage({
               </p>
             </div>
 
+            {/* Step 2 */}
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 relative hover:border-cyan-500/30 transition-colors">
               <div className="text-cyan-400 mb-4">
                 <Filter size={28} />
@@ -164,6 +154,7 @@ export function LandingPage({
               </p>
             </div>
 
+            {/* Step 3 */}
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 relative hover:border-cyan-500/30 transition-colors">
               <div className="text-cyan-400 mb-4">
                 <Zap size={28} />
@@ -176,6 +167,7 @@ export function LandingPage({
             </div>
           </div>
 
+          {/* Connector line visual hint */}
           <p className="text-center text-gray-500 text-sm mt-8">
             Most signals from Layer 1 are filtered out by Layer 2. <span className="text-gray-300">That filtering is the edge.</span>
           </p>
@@ -193,6 +185,7 @@ export function LandingPage({
             </p>
           </div>
 
+          {/* "Floor not ceiling" callout */}
           <div className="max-w-2xl mx-auto mb-8 rounded-xl border border-cyan-500/15 bg-cyan-500/5 px-5 py-3 text-center">
             <p className="text-cyan-300 text-xs leading-relaxed">
               <span className="font-semibold">These numbers include unfiltered signals</span> — entries the TPI would have skipped.
@@ -362,8 +355,15 @@ export function LandingPage({
       {/* ── FOOTER ── */}
       <footer className="container mx-auto px-4 py-8 border-t border-[#1F2937]">
         <div className="text-center text-gray-500 text-xs">
-          <p className="mb-1">© 2026 Tradinsight. All rights reserved.</p>
-          <p className="text-gray-600">Not financial advice. Trading involves risk. Past performance does not guarantee future results.</p>
+          <p className="mb-2">© 2026 Tradinsight · Operated by SPARKIN LTD (registered in England and Wales)</p>
+          <p className="text-gray-600 mb-3">Not financial advice. Trading involves risk. Past performance does not guarantee future results.</p>
+          <div className="flex items-center justify-center gap-4">
+            <a href="/terms" className="text-gray-500 hover:text-gray-300 transition-colors">Terms of Use</a>
+            <span className="text-gray-700">·</span>
+            <a href="/terms#privacy" className="text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</a>
+            <span className="text-gray-700">·</span>
+            <a href="/terms#refunds" className="text-gray-500 hover:text-gray-300 transition-colors">Refund Policy</a>
+          </div>
         </div>
       </footer>
     </div>

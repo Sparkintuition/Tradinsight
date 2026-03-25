@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   TrendingUp, LogOut, ArrowUpRight, ArrowDownRight, Minus,
-  Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap,
+  Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,38 +29,57 @@ interface Subscription {
 
 interface DashboardProps {
   onUnlockPremium?: () => void;
+  onMethodology?: () => void;
+  onAccount?: () => void;
 }
 
-// Static signal history from the strategy record
-const SIGNAL_HISTORY = [
+// Raw signals oldest→newest for earnings simulation
+const RAW_SIGNALS = [
+  { date: '5-Oct-20',   type: 'Long',  price: 10580,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-10-05' },
+  { date: '17-Apr-21',  type: 'Short', price: 59427,  tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2021-04-17' },
+  { date: '24-Jul-21',  type: 'Long',  price: 34897,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2021-07-24' },
+  { date: '20-Nov-21',  type: 'Short', price: 59854,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2021-11-20' },
+  { date: '1-Feb-22',   type: 'Long',  price: 24578,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2022-02-01' },
+  { date: '5-Apr-22',   type: 'Short', price: 45136,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-04-05' },
+  { date: '16-Jul-22',  type: 'Long',  price: 22525,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-07-16' },
+  { date: '22-Aug-22',  type: 'Short', price: 20819,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2022-08-22' },
+  { date: '7-Jan-23',   type: 'Long',  price: 17193,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2023-01-07' },
+  { date: '14-Apr-23',  type: 'Short', price: 30204,  tpiMedium: 'Negative', tpiLong: 'Positive',  isoDate: '2023-04-14' },
+  { date: '16-Sep-23',  type: 'Long',  price: 27005,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-09-16' },
+  { date: '5-Jan-24',   type: 'Short', price: 45776,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2024-01-05' },
+  { date: '13-Feb-24',  type: 'Long',  price: 44923,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-02-13' },
+  { date: '11-Apr-24',  type: 'Short', price: 69879,  tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2024-04-11' },
+  { date: '9-Jul-24',   type: 'Long',  price: 57089,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2024-07-09' },
+  { date: '30-Jul-24',  type: 'Short', price: 66680,  tpiMedium: 'Negative', tpiLong: 'Positive',  isoDate: '2024-07-30' },
+  { date: '25-Sep-24',  type: 'Long',  price: 59214,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-09-25' },
+  { date: '11-Dec-24',  type: 'Short', price: 101449, tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2024-12-11' },
+  { date: '22-Apr-25',  type: 'Long',  price: 87157,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2025-04-22' },
+  { date: '22-May-25',  type: 'Short', price: 107848, tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2025-05-22' },
+  { date: '11-Jul-25',  type: 'Long',  price: 108701, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-07-11' },
+  { date: '30-Jul-25',  type: 'Short', price: 117760, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-07-30' },
+  { date: '30-Sep-25',  type: 'Long',  price: 115527, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-09-30' },
+  { date: '14-Oct-25',  type: 'Short', price: 123206, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-10-14' },
+  { date: '19-Dec-25',  type: 'Long',  price: 85238,  tpiMedium: 'Positive', tpiLong: 'Negative',  isoDate: '2025-12-19' },
+  { date: '26-Jan-26',  type: 'Short', price: 95263,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-26' },
   { date: '4-Mar-26',   type: 'Long',  price: 65400,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-04' },
-  { date: '26-Jan-25',  type: 'Short', price: 95263,  tpiMedium: 'Negative', tpiLong: 'Negative'  },
-  { date: '19-Dec-25',  type: 'Long',  price: 85238,  tpiMedium: 'Positive', tpiLong: 'Negative'  },
-  { date: '14-Oct-25',  type: 'Short', price: 123206, tpiMedium: 'Negative', tpiLong: 'Negative'  },
-  { date: '30-Sep-25',  type: 'Long',  price: 115527, tpiMedium: 'Positive', tpiLong: 'Neutral'   },
-  { date: '30-Jul-25',  type: 'Short', price: 117760, tpiMedium: 'Negative', tpiLong: 'Negative'  },
-  { date: '11-Jul-25',  type: 'Long',  price: 108701, tpiMedium: 'Positive', tpiLong: 'Neutral'   },
-  { date: '22-May-25',  type: 'Short', price: 107848, tpiMedium: 'Neutral',  tpiLong: 'Neutral'   },
-  { date: '22-Apr-25',  type: 'Long',  price: 87157,  tpiMedium: 'Positive', tpiLong: 'Positive'  },
-  { date: '11-Dec-24',  type: 'Short', price: 101449, tpiMedium: 'Neutral',  tpiLong: 'Negative'  },
-  { date: '25-Sep-24',  type: 'Long',  price: 59214,  tpiMedium: 'Positive', tpiLong: 'Positive'  },
-  { date: '30-Jul-24',  type: 'Short', price: 66680,  tpiMedium: 'Negative', tpiLong: 'Positive'  },
-  { date: '9-Jul-24',   type: 'Long',  price: 57089,  tpiMedium: 'Neutral',  tpiLong: 'Positive'  },
-  { date: '11-Apr-24',  type: 'Short', price: 69879,  tpiMedium: 'Neutral',  tpiLong: 'Neutral'   },
-  { date: '13-Feb-24',  type: 'Long',  price: 44923,  tpiMedium: 'Positive', tpiLong: 'Positive'  },
-  { date: '5-Jan-24',   type: 'Short', price: 45776,  tpiMedium: 'Positive', tpiLong: 'Neutral'   },
-  { date: '16-Sep-23',  type: 'Long',  price: 27005,  tpiMedium: 'Positive', tpiLong: 'Positive'  },
-  { date: '14-Apr-23',  type: 'Short', price: 30204,  tpiMedium: 'Negative', tpiLong: 'Positive'  },
-  { date: '7-Jan-23',   type: 'Long',  price: 17193,  tpiMedium: 'Neutral',  tpiLong: 'Positive'  },
-  { date: '22-Aug-22',  type: 'Short', price: 20819,  tpiMedium: 'Negative', tpiLong: 'Neutral'   },
-  { date: '16-Jul-22',  type: 'Long',  price: 22525,  tpiMedium: 'Neutral',  tpiLong: 'Positive'  },
-  { date: '5-Apr-22',   type: 'Short', price: 45136,  tpiMedium: 'Negative', tpiLong: 'Negative'  },
-  { date: '1-Feb-22',   type: 'Long',  price: 24578,  tpiMedium: 'Positive', tpiLong: 'Positive'  },
-  { date: '20-Nov-21',  type: 'Short', price: 59854,  tpiMedium: 'Negative', tpiLong: 'Negative'  },
-  { date: '24-Jul-21',  type: 'Long',  price: 34897,  tpiMedium: 'Positive', tpiLong: 'Neutral'   },
-  { date: '17-Apr-21',  type: 'Short', price: 59427,  tpiMedium: 'Neutral',  tpiLong: 'Negative'  },
-  { date: '5-Oct-20',   type: 'Long',  price: 10580,  tpiMedium: 'Positive', tpiLong: 'Positive'  },
 ];
+
+// Compute cumulative $1,000 simulation, oldest→newest
+function computeEarnings() {
+  let balance = 1000;
+  return RAW_SIGNALS.map((s, i) => {
+    if (i === 0) return { ...s, pnlPct: null, balance: 1000 };
+    const prev = RAW_SIGNALS[i - 1];
+    const pnlPct = prev.type === 'Long'
+      ? (s.price - prev.price) / prev.price
+      : (prev.price - s.price) / prev.price;
+    balance = balance * (1 + pnlPct);
+    return { ...s, pnlPct: pnlPct * 100, balance: Math.round(balance) };
+  });
+}
+
+// Display newest→oldest (reverse)
+const SIGNAL_HISTORY = computeEarnings().reverse();
 
 function TpiPill({ value }: { value: string }) {
   const v = value.toLowerCase();
@@ -84,7 +103,7 @@ function TpiPill({ value }: { value: string }) {
   );
 }
 
-export function Dashboard({ onUnlockPremium }: DashboardProps) {
+export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: DashboardProps) {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -189,6 +208,13 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
                   <span className="text-gray-400 text-xs">{isPremium ? 'Premium' : 'Free'} Plan</span>
                 </div>
               </div>
+              <button
+                onClick={() => onMethodology?.()}
+                className="hidden sm:flex items-center gap-1.5 text-gray-400 hover:text-white text-xs transition-colors border border-[#1F2937] hover:border-[#334155] px-3 py-1.5 rounded-lg"
+              >
+                <BookOpen size={12} />
+                How it Works
+              </button>
               {!isPremium && (
                 <button
                   onClick={() => onUnlockPremium?.()}
@@ -198,6 +224,13 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
                   Upgrade
                 </button>
               )}
+              <button
+                onClick={() => onAccount?.()}
+                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                <User size={16} />
+                <span className="hidden sm:inline">Account</span>
+              </button>
               <button onClick={signOut} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
                 <LogOut size={18} />
                 <span className="hidden sm:inline">Sign Out</span>
@@ -211,24 +244,16 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
 
         {/* Free tier delay banner */}
         {isDelayed && (
-          <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl px-5 py-3.5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Clock size={16} className="text-amber-400 shrink-0" />
-              <div>
-                <p className="text-amber-300 font-medium text-sm">
-                  You are viewing signals with a 1-week delay on the Free Plan.
-                </p>
-                <p className="text-gray-500 text-xs mt-0.5">
-                  Upgrade to Premium to receive signals the moment they fire.
-                </p>
-              </div>
+          <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl px-5 py-3.5 flex items-center gap-3">
+            <Clock size={16} className="text-amber-400 shrink-0" />
+            <div>
+              <p className="text-amber-300 font-medium text-sm">
+                You are viewing signals with a 1-week delay on the Free Plan.
+              </p>
+              <p className="text-gray-500 text-xs mt-0.5">
+                Upgrade to Premium to receive signals the moment they fire.
+              </p>
             </div>
-            <button
-              onClick={() => onUnlockPremium?.()}
-              className="shrink-0 text-xs font-semibold text-black bg-[#D4A017] hover:bg-[#E6B325] px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Upgrade
-            </button>
           </div>
         )}
 
@@ -253,33 +278,7 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
           )}
         </div>
 
-        {/* Premium upsell banner for free users */}
-        {!isPremium && (
-          <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-white font-semibold mb-1">Unlock the full Tradinsight experience</h3>
-                <div className="flex flex-wrap gap-3 mt-2">
-                  {[
-                    { icon: <Zap size={13} />, label: 'Real-time signals', color: 'text-[#D4A017]' },
-                    { icon: <BarChart2 size={13} />, label: 'Full TPI breakdown', color: 'text-cyan-400' },
-                    { icon: <Shield size={13} />, label: 'Signal readiness', color: 'text-emerald-400' },
-                  ].map(f => (
-                    <span key={f.label} className={`flex items-center gap-1.5 text-xs font-medium ${f.color}`}>
-                      {f.icon} {f.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={() => onUnlockPremium?.()}
-                className="shrink-0 bg-[#D4A017] hover:bg-[#E6B325] text-black font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-              >
-                Unlock Real-Time Signals
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {/* Main content grid — signal + TPI panels side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -434,12 +433,9 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => onUnlockPremium?.()}
-                  className="mt-4 w-full text-xs font-semibold text-[#D4A017] border border-[#D4A017]/30 hover:bg-[#D4A017]/10 py-2.5 rounded-lg transition-colors"
-                >
-                  Unlock TPI Access
-                </button>
+                <p className="mt-4 text-gray-600 text-xs text-center">
+                  Available on Premium
+                </p>
               </div>
             )}
           </div>
@@ -490,55 +486,50 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
 
         {/* Signal History Table */}
         <div className="bg-[#121826] rounded-2xl border border-[#1F2937] overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#1F2937] flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 border-b border-[#1F2937] flex items-start sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-white font-semibold">Signal History</h2>
-              <p className="text-gray-500 text-xs mt-0.5">All strategy signals since 2020 — entries only, exits managed by you</p>
+              <p className="text-gray-500 text-xs mt-0.5">Entries only · exits managed by you · $1,000 simulation (100% allocation, both directions)</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
               <span className="text-xs text-gray-500">{SIGNAL_HISTORY.length} signals</span>
               {!isPremium && (
-                <span className="flex items-center gap-1 text-xs text-amber-400 border border-amber-500/20 bg-amber-500/8 px-2.5 py-1 rounded-full">
-                  <Clock size={10} />
-                  Latest signal delayed 1 week
+                <span className="flex items-center gap-1 text-xs text-amber-400 border border-amber-500/20 bg-amber-500/8 px-2.5 py-1 rounded-full whitespace-nowrap">
+                  <Clock size={10} /> Latest delayed 1w
                 </span>
               )}
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#1F2937]">
                   <th className="text-left px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Date</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Direction</th>
                   <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">BTC Price</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">TPI Medium</th>
-                  <th className="text-center px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Value Indicator</th>
+                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">TPI</th>
+                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Value</th>
+                  <th className="text-right px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">$1k Sim.</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1F2937]/50">
-                {displayHistory.map((signal, i) => {
-                  // Only blur the latest signal if it fired less than 1 week ago
-                  // Use isoDate field for reliable parsing
+                {displayHistory.map((signal: any, i: number) => {
                   const signalAgeMs = signal.isoDate
                     ? new Date().getTime() - new Date(signal.isoDate).getTime()
-                    : DELAY_MS + 1; // If no isoDate, treat as old (no blur)
+                    : DELAY_MS + 1;
                   const isLatestBlurred = !isPremium && i === 0 && signalAgeMs < DELAY_MS;
                   return (
-                    <tr
-                      key={i}
-                      className={`transition-colors hover:bg-[#0F172A]/50 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}
-                    >
+                    <tr key={i} className={`transition-colors hover:bg-[#0F172A]/50 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}>
                       <td className={`px-6 py-3.5 text-gray-300 text-xs font-mono ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
                         {isLatestBlurred ? 'XX-XXX-XX' : signal.date}
-                        {i === 0 && <span className="ml-2 text-[10px] text-cyan-400 font-sans font-medium not-italic">Latest</span>}
+                        {i === 0 && <span className="ml-2 text-[10px] text-cyan-400 font-sans font-medium">Latest</span>}
                       </td>
                       <td className="px-4 py-3.5">
                         {isLatestBlurred ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#1F2937] text-gray-600 border border-[#1F2937]">
-                            <Lock size={10} />
-                            Locked
+                            <Lock size={10} /> Locked
                           </span>
                         ) : (
                           <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
@@ -546,10 +537,7 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                               : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                           }`}>
-                            {signal.type === 'Long'
-                              ? <ArrowUpRight size={11} />
-                              : <ArrowDownRight size={11} />
-                            }
+                            {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
                             {signal.type}
                           </span>
                         )}
@@ -559,15 +547,31 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
                       </td>
                       <td className="px-4 py-3.5 text-center">
                         {isLatestBlurred
-                          ? <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2.5 py-0.5"><Lock size={9} /> —</span>
-                          : <TpiPill value={signal.tpiMedium} />
-                        }
+                          ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
+                          : <TpiPill value={signal.tpiMedium} />}
                       </td>
-                      <td className="px-6 py-3.5 text-center">
+                      <td className="px-4 py-3.5 text-center">
                         {isLatestBlurred
-                          ? <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2.5 py-0.5"><Lock size={9} /> —</span>
-                          : <TpiPill value={signal.tpiLong} />
-                        }
+                          ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
+                          : <TpiPill value={signal.tpiLong} />}
+                      </td>
+                      <td className={`px-6 py-3.5 text-right ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
+                        {signal.pnlPct === null ? (
+                          <span className="text-gray-500 text-xs font-mono">$1,000</span>
+                        ) : (
+                          <div>
+                            <div className={`text-xs font-bold font-mono ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {signal.pnlPct >= 0 ? '+' : ''}{signal.pnlPct.toFixed(1)}%
+                            </div>
+                            <div className="text-gray-400 text-[10px] font-mono mt-0.5">
+                              ${signal.balance >= 1000000
+                                ? (signal.balance / 1000000).toFixed(2) + 'M'
+                                : signal.balance >= 1000
+                                ? (signal.balance / 1000).toFixed(1) + 'k'
+                                : signal.balance.toLocaleString()}
+                            </div>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
@@ -576,28 +580,90 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
             </table>
           </div>
 
-          {/* Show more / less */}
-          <div className="px-6 py-3 border-t border-[#1F2937] flex items-center justify-between">
-            <p className="text-gray-600 text-xs">
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-[#1F2937]/50">
+            {displayHistory.map((signal: any, i: number) => {
+              const signalAgeMs = signal.isoDate
+                ? new Date().getTime() - new Date(signal.isoDate).getTime()
+                : DELAY_MS + 1;
+              const isLatestBlurred = !isPremium && i === 0 && signalAgeMs < DELAY_MS;
+              return (
+                <div key={i} className={`px-4 py-4 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-mono text-gray-300 ${isLatestBlurred ? 'blur-sm' : ''}`}>
+                        {isLatestBlurred ? 'XX-XXX-XX' : signal.date}
+                      </span>
+                      {i === 0 && <span className="text-[10px] text-cyan-400 font-medium">Latest</span>}
+                    </div>
+                    {isLatestBlurred ? (
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-[#1F2937] text-gray-600 border border-[#1F2937]">
+                        <Lock size={10} /> Locked
+                      </span>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                        signal.type === 'Long'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}>
+                        {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                        {signal.type}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className={`text-gray-300 text-xs font-mono ${isLatestBlurred ? 'blur-sm' : ''}`}>
+                        ${isLatestBlurred ? '——' : signal.price.toLocaleString()}
+                      </span>
+                      {!isLatestBlurred && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <TpiPill value={signal.tpiMedium} />
+                          <TpiPill value={signal.tpiLong} />
+                        </div>
+                      )}
+                    </div>
+                    {!isLatestBlurred && signal.pnlPct !== null && (
+                      <div className="text-right">
+                        <div className={`text-xs font-bold ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {signal.pnlPct >= 0 ? '+' : ''}{signal.pnlPct.toFixed(1)}%
+                        </div>
+                        <div className="text-gray-500 text-[10px] font-mono mt-0.5">
+                          ${signal.balance >= 1000000
+                            ? (signal.balance / 1000000).toFixed(2) + 'M'
+                            : signal.balance >= 1000
+                            ? (signal.balance / 1000).toFixed(1) + 'k'
+                            : signal.balance.toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                    {!isLatestBlurred && signal.pnlPct === null && (
+                      <span className="text-gray-500 text-xs font-mono">Start $1,000</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 sm:px-6 py-3 border-t border-[#1F2937] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <p className="text-gray-600 text-xs leading-relaxed">
+              Simulation: $1,000 start · 100% allocation · no fees · not financial advice
             </p>
             <button
               onClick={() => setShowFullHistory(!showFullHistory)}
-              className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+              className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium whitespace-nowrap"
             >
-              {showFullHistory ? (
-                <><ChevronUp size={14} /> Show less</>
-              ) : (
-                <><ChevronDown size={14} /> Show all {SIGNAL_HISTORY.length} signals</>
-              )}
+              {showFullHistory ? <><ChevronUp size={14} />Show less</> : <><ChevronDown size={14} />All {SIGNAL_HISTORY.length} signals</>}
             </button>
           </div>
 
-          {/* Free user upgrade hook below table */}
           {!isPremium && (
-            <div className="mx-6 mb-5 rounded-xl border border-[#C69214]/20 bg-[#C69214]/5 px-5 py-4 flex items-center justify-between gap-4">
+            <div className="mx-4 sm:mx-6 mb-5 rounded-xl border border-[#C69214]/20 bg-[#C69214]/5 px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <p className="text-gray-300 text-xs leading-relaxed">
-                <span className="text-[#D4A017] font-semibold">The latest signal is delayed 1 week on the free plan.</span>
-                {' '}Premium members see it the moment it fires — plus full TPI breakdown and analysis.
+                <span className="text-[#D4A017] font-semibold">Latest signal delayed 1 week on the free plan.</span>
+                {' '}Premium members see it the moment it fires — plus full TPI breakdown.
               </p>
               <button
                 onClick={() => onUnlockPremium?.()}
@@ -607,6 +673,16 @@ export function Dashboard({ onUnlockPremium }: DashboardProps) {
               </button>
             </div>
           )}
+        </div>
+
+                {/* Footer */}
+        <div className="border-t border-[#1F2937] pt-5 pb-2 text-center">
+          <p className="text-gray-700 text-xs">
+            SPARKIN LTD · Not financial advice ·{' '}
+            <a href="/terms" className="hover:text-gray-500 transition-colors">Terms of Use</a>
+            {' '}·{' '}
+            <a href="/terms#refunds" className="hover:text-gray-500 transition-colors">Refund Policy</a>
+          </p>
         </div>
 
       </main>

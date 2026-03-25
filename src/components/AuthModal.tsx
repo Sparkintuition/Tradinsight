@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -20,6 +21,7 @@ export function AuthModal({
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -131,6 +133,18 @@ export function AuthModal({
               placeholder="••••••••"
             />
           </div>
+
+          {mode === 'signin' && (
+            <div className="text-right -mt-1">
+              <button
+                type="button"
+                onClick={() => { onClose(); navigate('/forgot-password'); }}
+                className="text-gray-500 hover:text-cyan-400 text-xs transition-colors"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-lg text-sm">
