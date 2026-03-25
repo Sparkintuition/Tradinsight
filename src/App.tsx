@@ -265,7 +265,7 @@ function AppRoutes() {
           }
         />
 
-        <Route path="/forgot-password" element={<ForgotPassword onBack={() => { setShowAuthModal(true); setAuthMode('signin'); }} />} />
+        <Route path="/forgot-password" element={<ForgotPassword onBack={() => { navigate('/'); setAuthMode('signin'); setShowAuthModal(true); }} />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

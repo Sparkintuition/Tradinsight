@@ -208,7 +208,7 @@ export function LandingPage({
               <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 67%</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">5–6</p>
+              <p className="text-3xl font-bold text-white">2–3</p>
               <p className="text-gray-400 text-xs mt-2 leading-snug">TPI-confirmed signals<br/>per year (live system)</p>
             </div>
           </div>
@@ -235,6 +235,170 @@ export function LandingPage({
           <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-2">
             <span className="text-cyan-400 text-xs font-medium">The TPI filter removes low-conviction entries — designed to make this curve steeper.</span>
           </div>
+        </div>
+      </section>
+
+      {/* ── SIGNAL MOCKUP ── */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
+              What a Signal Looks Like
+            </h2>
+            <p className="text-gray-400 text-sm max-w-xl mx-auto leading-relaxed">
+              When conditions align, this is what lands in your dashboard. Clear direction, entry price, TPI confirmation, and the reasoning behind it.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            {/* Signal card */}
+            <div className="lg:col-span-2 bg-[#121826] rounded-2xl border border-[#1F2937] p-5">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="text-lg font-bold text-white">BTC/USDT</h3>
+                  <p className="text-gray-500 text-xs">Active signal</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+                    LONG ACTIVE
+                  </span>
+                </div>
+              </div>
+
+              {/* Signal details */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
+                  <p className="text-gray-500 text-xs mb-1">Signal Direction</p>
+                  <div className="flex items-center gap-2">
+                    <ArrowRight size={16} className="text-emerald-400 -rotate-45" />
+                    <span className="text-emerald-400 font-bold text-lg">LONG</span>
+                  </div>
+                </div>
+                <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
+                  <p className="text-gray-500 text-xs mb-1">Entry Price</p>
+                  <p className="text-white font-bold text-lg">$65,400</p>
+                </div>
+                <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
+                  <p className="text-gray-500 text-xs mb-1">Signal Date</p>
+                  <p className="text-white font-semibold text-sm">4th March 2026</p>
+                </div>
+                <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
+                  <p className="text-gray-500 text-xs mb-1">System Layers</p>
+                  <div className="flex gap-1.5 mt-1">
+                    <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.5">Strategy ✓</span>
+                    <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.5">TPI ✓</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trade management note */}
+              <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937] mb-4">
+                <p className="text-gray-500 text-xs font-medium mb-1">Trade Management</p>
+                <p className="text-gray-300 text-xs leading-relaxed">
+                  Tradinsight provides entry direction only. Take profit and stop loss are set by you based on your risk tolerance and position size.
+                </p>
+              </div>
+
+              {/* Premium analysis — blurred for non-members */}
+              <div className="relative bg-[#0F172A]/70 rounded-xl p-4 border border-[#C69214]/20 overflow-hidden">
+                <div className="blur-sm select-none pointer-events-none">
+                  <p className="text-[#D4A017] text-xs font-medium mb-2">Signal Analysis (Premium)</p>
+                  <p className="text-gray-300 text-xs leading-relaxed">
+                    RSI showing oversold on 4H timeframe. ADX confirming strong trend momentum above 25. CCI crossing from negative territory. TPI medium term shifted positive — SPX correlation aligned. Value indicator neutral, supporting entry at current levels.
+                  </p>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-[#0B0F19]/40 backdrop-blur-[1px]">
+                  <div className="text-center px-4">
+                    <Zap size={16} className="text-[#D4A017] mx-auto mb-1.5" />
+                    <p className="text-[#D4A017] text-xs font-semibold">Premium — Full Analysis</p>
+                    <p className="text-gray-500 text-[10px] mt-0.5">See the complete TPI reasoning behind every signal</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TPI panel */}
+            <div className="space-y-4">
+
+              {/* TPI status */}
+              <div className="bg-[#121826] rounded-2xl border border-cyan-500/20 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart2 size={14} className="text-cyan-400" />
+                  <h3 className="text-white font-semibold text-sm">Market Conditions</h3>
+                  <span className="ml-auto text-[10px] text-gray-500">Live TPI</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white text-xs font-semibold">TPI Medium Term</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                        Positive
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {['Momentum', 'SuperTrend', 'SAR', 'DMI', 'SPX'].map(t => (
+                        <span key={t} className="text-[10px] text-gray-500 bg-[#0B0F19] border border-[#1F2937] rounded px-1.5 py-0.5">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white text-xs font-semibold">Value Indicator</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-500/10 border border-gray-500/20 rounded-full px-2.5 py-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
+                        Neutral
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {['CVDD', 'Reserve Risk', 'MVRV', 'NUPL'].map(t => (
+                        <span key={t} className="text-[10px] text-gray-500 bg-[#0B0F19] border border-[#1F2937] rounded px-1.5 py-0.5">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Signal remains active note */}
+              <div className="bg-[#121826] rounded-2xl border border-[#1F2937] p-4 text-center">
+                <Clock size={14} className="text-gray-500 mx-auto mb-2" />
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  Signal stays active until the opposite direction fires. No exit target — trade management is yours.
+                </p>
+              </div>
+
+              {/* What free vs premium sees */}
+              <div className="bg-[#121826] rounded-2xl border border-[#1F2937] p-4">
+                <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-3">Free vs Premium</p>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Signal history', free: true },
+                    { label: 'Entry price & date', free: true },
+                    { label: 'TPI state', free: false },
+                    { label: 'Real-time alerts', free: false },
+                    { label: 'Full analysis', free: false },
+                  ].map(item => (
+                    <div key={item.label} className="flex items-center justify-between">
+                      <span className="text-gray-400 text-xs">{item.label}</span>
+                      <span className={`text-xs font-medium ${item.free ? 'text-emerald-400' : 'text-[#D4A017]'}`}>
+                        {item.free ? 'Free' : 'Premium'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Caption */}
+          <p className="text-center text-gray-600 text-xs mt-6">
+            This is a real signal from 4th March 2026. Premium members received this alert in real time.
+          </p>
         </div>
       </section>
 
