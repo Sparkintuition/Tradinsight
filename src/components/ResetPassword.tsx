@@ -15,12 +15,17 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for error params in URL hash (e.g. expired link)
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace('#', '&'));
-    const errorCode = params.get('error_code');
-    const errorDesc = params.get('error_description');
+    // Parse both hash (#) and query string (?) for error/token params
+    const hash = window.location.hash.replace('#', '');
+    const search = window.location.search.replace('?', '');
+    const combined = new URLSearchParams(hash + '&' + search);
 
+    const errorCode = combined.get('error_code');
+    const errorDesc = combined.get('error_description');
+    const accessToken = combined.get('access_token');
+    const type = combined.get('type');
+
+    // Handle explicit error in URL
     if (errorCode) {
       setLinkError(
         errorCode === 'otp_expired'
@@ -30,14 +35,29 @@ export function ResetPassword() {
       return;
     }
 
-    // Wait specifically for PASSWORD_RECOVERY event — not just any session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // If token is in URL, set the session manually then mark ready
+    if (accessToken && type === 'recovery') {
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: combined.get('refresh_token') || '',
+      }).then(({ error }) => {
+        if (error) {
+          setLinkError('This reset link is invalid or has expired. Please request a new one.');
+        } else {
+          setReady(true);
+        }
+      });
+      return;
+    }
+
+    // Otherwise wait for PASSWORD_RECOVERY event from Supabase auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setReady(true);
       }
     });
 
-    // 8 second timeout fallback
+    // 8 second timeout — if no event fires, the link is dead
     const timeout = setTimeout(() => {
       setLinkError('Could not verify reset link. It may have expired. Please request a new one.');
     }, 8000);
