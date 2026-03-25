@@ -38,6 +38,12 @@ function AppRoutes() {
     const resolveFlow = async () => {
       if (loading) return;
 
+      // Auth pages handle themselves — skip all redirect logic
+      if (location.pathname === '/reset-password' || location.pathname === '/forgot-password') {
+        setCheckingFlow(false);
+        return;
+      }
+
       // On landing page — route logged-in users directly to dashboard
       if (location.pathname === '/') {
         if (user) {

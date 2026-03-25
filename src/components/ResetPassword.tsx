@@ -10,62 +10,55 @@ export function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState('');
   const [success, setSuccess] = useState(false);
-  // 'waiting' | 'ready' | 'error'
   const [status, setStatus] = useState<'waiting' | 'ready' | 'error'>('waiting');
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Parse the URL hash for error or token params
-    const hash = window.location.hash.substring(1); // remove leading #
-    const params = new URLSearchParams(hash);
+    let timeout: ReturnType<typeof setTimeout>;
 
-    const error = params.get('error');
-    const errorCode = params.get('error_code');
-    const errorDesc = params.get('error_description');
-    const type = params.get('type');
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-
-    // Explicit error in URL
-    if (error || errorCode) {
-      const msg = errorCode === 'otp_expired'
-        ? 'This reset link has expired. Please request a new one.'
-        : (errorDesc?.replace(/\+/g, ' ') || 'This reset link is invalid or has expired.');
-      setErrorMsg(msg);
-      setStatus('error');
-      return;
-    }
-
-    // Token is in the hash — set session directly
-    if (accessToken && type === 'recovery') {
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken || '',
-      }).then(({ error: sessionError }) => {
-        if (sessionError) {
-          setErrorMsg('This reset link is invalid or has expired. Please request a new one.');
-          setStatus('error');
-        } else {
-          setStatus('ready');
-        }
-      });
-      return;
-    }
-
-    // No token in URL — listen for PASSWORD_RECOVERY event
-    // This fires when Supabase processes the token server-side and redirects here
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // Supabase v2 with PKCE: the library automatically exchanges the code
+    // in the URL and fires onAuthStateChange with PASSWORD_RECOVERY.
+    // We just need to listen for it — do NOT try to parse the URL manually.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[ResetPassword] auth event:', event, !!session);
       if (event === 'PASSWORD_RECOVERY') {
+        clearTimeout(timeout);
         setStatus('ready');
+      }
+      // If user is signed in via a normal session (not recovery), redirect away
+      if (event === 'SIGNED_IN' && session && status === 'waiting') {
+        // Check URL — if no recovery-related params, this isn't a reset flow
+        const hash = window.location.hash;
+        const search = window.location.search;
+        if (!hash.includes('type=recovery') && !search.includes('type=recovery')) {
+          clearTimeout(timeout);
+          navigate('/dashboard', { replace: true });
+        }
       }
     });
 
-    // Timeout — if nothing fires in 10s, the link is dead
-    const timeout = setTimeout(() => {
-      setErrorMsg('Could not verify the reset link. Please request a new one.');
+    // Also check for error params in URL
+    const allParams = new URLSearchParams(
+      window.location.hash.substring(1) + '&' + window.location.search.substring(1)
+    );
+    const errorCode = allParams.get('error_code');
+    if (errorCode) {
+      setErrorMsg(
+        errorCode === 'otp_expired'
+          ? 'This reset link has expired. Please request a new one.'
+          : 'This reset link is invalid or has expired. Please request a new one.'
+      );
       setStatus('error');
-    }, 10000);
+      subscription.unsubscribe();
+      return;
+    }
+
+    // 15 second timeout — generous to account for PKCE code exchange latency
+    timeout = setTimeout(() => {
+      setErrorMsg('Could not verify the reset link. It may have expired. Please request a new one.');
+      setStatus('error');
+    }, 15000);
 
     return () => {
       subscription.unsubscribe();
@@ -76,22 +69,15 @@ export function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
-    if (password.length < 6) {
-      setFormError('Password must be at least 6 characters.');
-      return;
-    }
-    if (password !== confirm) {
-      setFormError('Passwords do not match.');
-      return;
-    }
+    if (password.length < 6) { setFormError('Password must be at least 6 characters.'); return; }
+    if (password !== confirm) { setFormError('Passwords do not match.'); return; }
     setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       setSuccess(true);
-      // Sign out after reset so user logs in fresh with new password
       await supabase.auth.signOut();
-      setTimeout(() => navigate('/'), 3000);
+      setTimeout(() => navigate('/'), 2500);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
@@ -156,16 +142,12 @@ export function ResetPassword() {
                       type={showPw ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      required
-                      minLength={6}
+                      required minLength={6}
                       className="w-full px-4 py-3 bg-[#0F172A] border border-[#1F2937] rounded-xl text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50 pr-10"
                       placeholder="At least 6 characters"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw(!showPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                    >
+                    <button type="button" onClick={() => setShowPw(!showPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
                       {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
@@ -187,11 +169,8 @@ export function ResetPassword() {
                     <p className="text-rose-300 text-xs">{formError}</p>
                   </div>
                 )}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-[#D4A017] hover:bg-[#E6B325] text-black font-semibold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
-                >
+                <button type="submit" disabled={loading}
+                  className="w-full bg-[#D4A017] hover:bg-[#E6B325] text-black font-semibold py-3 rounded-xl text-sm transition-colors disabled:opacity-50">
                   {loading ? 'Updating...' : 'Update Password'}
                 </button>
               </form>
@@ -202,7 +181,7 @@ export function ResetPassword() {
                 <Check size={22} className="text-emerald-400" />
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Password updated</h2>
-              <p className="text-gray-400 text-sm">Redirecting you to sign in...</p>
+              <p className="text-gray-400 text-sm">Redirecting to sign in...</p>
             </div>
           )}
         </div>
