@@ -25,6 +25,7 @@ function AppRoutes() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('signup');
   const [checkingFlow, setCheckingFlow] = useState(true);
+  const [afterAuthRedirect, setAfterAuthRedirect] = useState<string | null>(null);
 
   useEffect(() => {
     const resolveFlow = async () => {
@@ -32,53 +33,21 @@ function AppRoutes() {
 
       if (!user) {
         setCheckingFlow(false);
-
-        if (
-          location.pathname === '/survey' ||
-          location.pathname === '/subscription' ||
-          location.pathname === '/dashboard'
-        ) {
-          navigate('/', { replace: true });
-        }
         return;
       }
 
       try {
-        const [surveyResult, profileResult] = await Promise.all([
-          supabase
-            .from('survey_responses')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle(),
-          supabase
-            .from('profiles')
-            .select('is_premium')
-            .eq('id', user.id)
-            .maybeSingle(),
-        ]);
+        const { data: profileResult } = await supabase
+          .from('profiles')
+          .select('is_premium')
+          .eq('id', user.id)
+          .maybeSingle();
 
-        if (!surveyResult.data) {
-          if (location.pathname !== '/survey') {
-            navigate('/survey', { replace: true });
-          }
-        } else if (profileResult.data?.is_premium) {
-          if (location.pathname !== '/dashboard') {
-            navigate('/dashboard', { replace: true });
-          }
-        } else {
-          // free users can still access subscription page or dashboard
-          if (
-            location.pathname !== '/subscription' &&
-            location.pathname !== '/dashboard'
-          ) {
-            navigate('/subscription', { replace: true });
-          }
+        if (profileResult?.is_premium && location.pathname !== '/dashboard') {
+          navigate('/dashboard', { replace: true });
         }
       } catch (error) {
         console.error('Error checking user flow:', error);
-        if (location.pathname !== '/') {
-          navigate('/', { replace: true });
-        }
       } finally {
         setCheckingFlow(false);
       }
@@ -87,13 +56,34 @@ function AppRoutes() {
     resolveFlow();
   }, [user, loading, navigate, location.pathname]);
 
-  const handleGetStarted = () => {
-    if (user) {
-      navigate('/survey');
-    } else {
-      setAuthMode('signup');
-      setShowAuthModal(true);
+  useEffect(() => {
+    if (user && afterAuthRedirect) {
+      setShowAuthModal(false);
+      navigate(afterAuthRedirect);
+      setAfterAuthRedirect(null);
     }
+  }, [user, afterAuthRedirect, navigate]);
+
+  const handleGetStarted = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      setAuthMode('signup');
+      setAfterAuthRedirect('/survey');
+      setShowAuthModal(true);
+      return;
+    }
+
+    navigate('/survey');
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setAfterAuthRedirect(null);
+    setShowAuthModal(false);
+    navigate('/');
   };
 
   if (loading || checkingFlow) {
@@ -113,6 +103,7 @@ function AppRoutes() {
           path="/"
           element={
             <LandingPage
+              user={user}
               onGetStarted={handleGetStarted}
               onLogin={() => {
                 setAuthMode('signin');
@@ -122,6 +113,7 @@ function AppRoutes() {
                 setAuthMode('signup');
                 setShowAuthModal(true);
               }}
+              onLogout={handleLogout}
             />
           }
         />
@@ -142,7 +134,17 @@ function AppRoutes() {
 
         <Route
           path="/subscription"
-          element={user ? <SubscriptionPage /> : <Navigate to="/" replace />}
+          element={
+            user ? (
+              <SubscriptionPage
+                onComplete={() => navigate('/dashboard')}
+                onGoHome={() => navigate('/')}
+                onBackToProfile={() => navigate('/survey')}
+              />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
 
         <Route
@@ -161,7 +163,10 @@ function AppRoutes() {
 
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={() => {
+          setShowAuthModal(false);
+          setAfterAuthRedirect(null);
+        }}
         initialMode={authMode}
       />
     </>
