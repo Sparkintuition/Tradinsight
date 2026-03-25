@@ -44,6 +44,14 @@ function AppRoutes() {
         return;
       }
 
+      // Skip routing if user just signed out (flag set in AuthContext)
+      const justSignedOut = sessionStorage.getItem('tradinsight_signed_out') === 'true';
+      if (justSignedOut && !user) {
+        setCheckingFlow(false);
+        return;
+      }
+      if (user) sessionStorage.removeItem('tradinsight_signed_out');
+
       // On landing page — route logged-in users directly to dashboard
       if (location.pathname === '/') {
         if (user) {

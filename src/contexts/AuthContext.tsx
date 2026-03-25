@@ -112,6 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Set flag so App.tsx routing doesn't immediately re-route on session cleanup
+    sessionStorage.setItem('tradinsight_signed_out', 'true');
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);

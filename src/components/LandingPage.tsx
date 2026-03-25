@@ -49,17 +49,11 @@ export function LandingPage({
       </header>
 
       {/* ── HERO ── */}
-      <section className="container mx-auto px-4 pt-24 pb-16">
+      <section className="container mx-auto px-4 pt-14 pb-16">
         <div className="max-w-3xl mx-auto text-center relative">
 
           {/* Glow */}
           <div className="absolute inset-x-0 top-0 mx-auto h-64 w-64 rounded-full bg-cyan-500/8 blur-3xl pointer-events-none" />
-
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 mb-6">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-cyan-400 text-xs font-semibold tracking-widest uppercase">BTC Signal Platform</span>
-          </div>
 
           <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight mb-6 leading-[1.1] relative">
             Stop trading noise.
@@ -171,70 +165,6 @@ export function LandingPage({
           <p className="text-center text-gray-500 text-sm mt-8">
             Most signals from Layer 1 are filtered out by Layer 2. <span className="text-gray-300">That filtering is the edge.</span>
           </p>
-        </div>
-      </section>
-
-      {/* ── PERFORMANCE STATS ── */}
-      <section className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-4">
-            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Strategy Performance</h2>
-            <p className="text-gray-400 text-sm max-w-xl mx-auto">
-              Backtested on BTC since 2018 — <span className="text-gray-300">raw strategy signals, no TPI filter applied.</span>
-              <br />This is the baseline. The TPI layer improves on it further.
-            </p>
-          </div>
-
-          {/* "Floor not ceiling" callout */}
-          <div className="max-w-2xl mx-auto mb-8 rounded-xl border border-cyan-500/15 bg-cyan-500/5 px-5 py-3 text-center">
-            <p className="text-cyan-300 text-xs leading-relaxed">
-              <span className="font-semibold">These numbers include unfiltered signals</span> — entries the TPI would have skipped.
-              The full Tradinsight system (strategy + TPI) is designed to cut the noise and keep only the high-conviction setups.
-              Think of this as the floor, not the ceiling.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">48</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Raw signals<br/>since 2018</p>
-            </div>
-            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">60.4%</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Win rate —<br/>unfiltered baseline</p>
-            </div>
-            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">1.67</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 67%</p>
-            </div>
-            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">2–3</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">TPI-confirmed signals<br/>per year (live system)</p>
-            </div>
-          </div>
-
-          <p className="text-center text-gray-500 text-xs mt-5">
-            Backtested results. Past performance does not guarantee future results. Live signal tracking in progress.
-          </p>
-        </div>
-      </section>
-
-      {/* ── EQUITY CURVE ── */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">Equity Curve</h2>
-          <p className="text-gray-400 text-sm mb-1">
-            Growth of $1,000 — <span className="text-gray-300">raw strategy signals, no TPI filter.</span>
-          </p>
-          <p className="text-gray-500 text-xs mb-8">
-            This includes signals the TPI would have skipped. The live Tradinsight system applies the filter on top — targeting only the setups where everything aligns.
-          </p>
-          <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-4 shadow-lg shadow-black/20">
-            <img src="/equity.png" alt="Equity Curve" className="rounded-xl w-full" />
-          </div>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-2">
-            <span className="text-cyan-400 text-xs font-medium">The TPI filter removes low-conviction entries — designed to make this curve steeper.</span>
-          </div>
         </div>
       </section>
 
@@ -399,6 +329,71 @@ export function LandingPage({
           <p className="text-center text-gray-600 text-xs mt-6">
             This is a real signal from 4th March 2026. Premium members received this alert in real time.
           </p>
+        </div>
+      </section>
+
+
+      {/* ── PERFORMANCE STATS ── */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-4">
+            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Strategy Performance</h2>
+            <p className="text-gray-400 text-sm max-w-xl mx-auto">
+              Backtested on BTC since 2018 — <span className="text-gray-300">raw strategy signals, no TPI filter applied.</span>
+              <br />This is the baseline. The TPI layer improves on it further.
+            </p>
+          </div>
+
+          {/* "Floor not ceiling" callout */}
+          <div className="max-w-2xl mx-auto mb-8 rounded-xl border border-cyan-500/15 bg-cyan-500/5 px-5 py-3 text-center">
+            <p className="text-cyan-300 text-xs leading-relaxed">
+              <span className="font-semibold">These numbers include unfiltered signals</span> — entries the TPI would have skipped.
+              The full Tradinsight system (strategy + TPI) is designed to cut the noise and keep only the high-conviction setups.
+              Think of this as the floor, not the ceiling.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
+              <p className="text-3xl font-bold text-white">48</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Raw signals<br/>since 2018</p>
+            </div>
+            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
+              <p className="text-3xl font-bold text-white">60.4%</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Win rate —<br/>unfiltered baseline</p>
+            </div>
+            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
+              <p className="text-3xl font-bold text-white">1.67</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 67%</p>
+            </div>
+            <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
+              <p className="text-3xl font-bold text-white">2–3</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">TPI-confirmed signals<br/>per year (live system)</p>
+            </div>
+          </div>
+
+          <p className="text-center text-gray-500 text-xs mt-5">
+            Backtested results. Past performance does not guarantee future results. Live signal tracking in progress.
+          </p>
+        </div>
+      </section>
+
+      {/* ── EQUITY CURVE ── */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">Equity Curve</h2>
+          <p className="text-gray-400 text-sm mb-1">
+            Growth of $1,000 — <span className="text-gray-300">raw strategy signals, no TPI filter.</span>
+          </p>
+          <p className="text-gray-500 text-xs mb-8">
+            This includes signals the TPI would have skipped. The live Tradinsight system applies the filter on top — targeting only the setups where everything aligns.
+          </p>
+          <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-4 shadow-lg shadow-black/20">
+            <img src="/equity.png" alt="Equity Curve" className="rounded-xl w-full" />
+          </div>
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-2">
+            <span className="text-cyan-400 text-xs font-medium">The TPI filter removes low-conviction entries — designed to make this curve steeper.</span>
+          </div>
         </div>
       </section>
 
