@@ -15,55 +15,62 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
+    const verifyToken = async () => {
+      // Get params from both query string and hash
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
-    // Supabase v2 with PKCE: the library automatically exchanges the code
-    // in the URL and fires onAuthStateChange with PASSWORD_RECOVERY.
-    // We just need to listen for it — do NOT try to parse the URL manually.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[ResetPassword] auth event:', event, !!session);
-      if (event === 'PASSWORD_RECOVERY') {
-        clearTimeout(timeout);
-        setStatus('ready');
+      const tokenHash = searchParams.get('token_hash') || hashParams.get('token_hash');
+      const type = searchParams.get('type') || hashParams.get('type');
+      const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
+      const errorDesc = searchParams.get('error_description') || hashParams.get('error_description');
+
+      // Handle explicit errors
+      if (errorCode) {
+        setErrorMsg(
+          errorCode === 'otp_expired'
+            ? 'This reset link has expired. Please request a new one.'
+            : (errorDesc?.replace(/\+/g, ' ') || 'This reset link is invalid. Please request a new one.')
+        );
+        setStatus('error');
+        return;
       }
-      // If user is signed in via a normal session (not recovery), redirect away
-      if (event === 'SIGNED_IN' && session && status === 'waiting') {
-        // Check URL — if no recovery-related params, this isn't a reset flow
-        const hash = window.location.hash;
-        const search = window.location.search;
-        if (!hash.includes('type=recovery') && !search.includes('type=recovery')) {
-          clearTimeout(timeout);
-          navigate('/dashboard', { replace: true });
+
+      // PKCE flow: verify the token_hash directly
+      if (tokenHash && type === 'recovery') {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        });
+        if (error) {
+          setErrorMsg('This reset link is invalid or has expired. Please request a new one.');
+          setStatus('error');
+        } else {
+          setStatus('ready');
         }
+        return;
       }
-    });
 
-    // Also check for error params in URL
-    const allParams = new URLSearchParams(
-      window.location.hash.substring(1) + '&' + window.location.search.substring(1)
-    );
-    const errorCode = allParams.get('error_code');
-    if (errorCode) {
-      setErrorMsg(
-        errorCode === 'otp_expired'
-          ? 'This reset link has expired. Please request a new one.'
-          : 'This reset link is invalid or has expired. Please request a new one.'
-      );
-      setStatus('error');
-      subscription.unsubscribe();
-      return;
-    }
+      // Fallback: listen for PASSWORD_RECOVERY event (legacy hash flow)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setStatus('ready');
+        }
+      });
 
-    // 15 second timeout — generous to account for PKCE code exchange latency
-    timeout = setTimeout(() => {
-      setErrorMsg('Could not verify the reset link. It may have expired. Please request a new one.');
-      setStatus('error');
-    }, 15000);
+      const timeout = setTimeout(() => {
+        setErrorMsg('Could not verify reset link. It may have expired. Please request a new one.');
+        setStatus('error');
+        subscription.unsubscribe();
+      }, 10000);
 
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
+      return () => {
+        subscription.unsubscribe();
+        clearTimeout(timeout);
+      };
     };
+
+    verifyToken();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
