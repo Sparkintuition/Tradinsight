@@ -25,27 +25,86 @@ function AppRoutes() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('signup');
   const [checkingFlow, setCheckingFlow] = useState(true);
-  const [afterAuthRedirect, setAfterAuthRedirect] = useState<string | null>(null);
+  // Tracks whether the user intentionally navigated to /survey (back button or retake)
+  // When true, skip the "already completed survey → redirect to /subscription" check
+  const [surveyIntentional, setSurveyIntentional] = useState(false);
 
   useEffect(() => {
     const resolveFlow = async () => {
       if (loading) return;
 
-      if (!user) {
+      // On landing page — route logged-in users directly to dashboard
+      if (location.pathname === '/') {
+        if (user) {
+          try {
+            const [surveyResult, profileResult] = await Promise.all([
+              supabase.from('survey_responses').select('id').eq('user_id', user.id).maybeSingle(),
+              supabase.from('profiles').select('is_premium').eq('id', user.id).maybeSingle(),
+            ]);
+            if (profileResult.data?.is_premium) {
+              navigate('/dashboard', { replace: true });
+              return;
+            } else if (surveyResult.data) {
+              // Free user with completed survey — send to dashboard
+              navigate('/dashboard', { replace: true });
+              return;
+            }
+            // No survey yet — stay on landing, let them click CTA
+          } catch {
+            // On error stay on landing
+          }
+        }
         setCheckingFlow(false);
         return;
       }
 
-      try {
-        const { data: profileResult } = await supabase
-          .from('profiles')
-          .select('is_premium')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profileResult?.is_premium && location.pathname !== '/dashboard') {
-          navigate('/dashboard', { replace: true });
+      // Not logged in — redirect protected routes to home
+      if (!user) {
+        setCheckingFlow(false);
+        if (location.pathname !== '/') {
+          navigate('/', { replace: true });
         }
+        return;
+      }
+
+      try {
+        const [surveyResult, profileResult] = await Promise.all([
+          supabase
+            .from('survey_responses')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('profiles')
+            .select('is_premium')
+            .eq('id', user.id)
+            .maybeSingle(),
+        ]);
+
+        // Premium users always go to dashboard
+        if (profileResult.data?.is_premium) {
+          if (location.pathname !== '/dashboard') {
+            navigate('/dashboard', { replace: true });
+          }
+          return;
+        }
+
+        // No survey yet — must complete survey first
+        if (!surveyResult.data) {
+          if (location.pathname !== '/survey') {
+            navigate('/survey', { replace: true });
+          }
+          return;
+        }
+
+        // Survey complete, not premium:
+        // - /survey: only allow if user navigated here intentionally (back button / retake)
+        // - anything else: allow freely (subscription, dashboard)
+        if (location.pathname === '/survey' && !surveyIntentional) {
+          navigate('/subscription', { replace: true });
+          return;
+        }
+
       } catch (error) {
         console.error('Error checking user flow:', error);
       } finally {
@@ -54,36 +113,37 @@ function AppRoutes() {
     };
 
     resolveFlow();
-  }, [user, loading, navigate, location.pathname]);
-
-  useEffect(() => {
-    if (user && afterAuthRedirect) {
-      setShowAuthModal(false);
-      navigate(afterAuthRedirect);
-      setAfterAuthRedirect(null);
-    }
-  }, [user, afterAuthRedirect, navigate]);
+  }, [user, loading, navigate, location.pathname, surveyIntentional]);
 
   const handleGetStarted = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    // Always fetch a live session — never trust React state which may be stale
+    const { data: { session: liveSession } } = await supabase.auth.getSession();
 
-    if (!session?.user) {
+    if (!liveSession?.user) {
+      // Confirmed not logged in — show signup modal
       setAuthMode('signup');
-      setAfterAuthRedirect('/survey');
       setShowAuthModal(true);
       return;
     }
 
-    navigate('/survey');
-  };
+    // Confirmed logged in — route based on their progress
+    const uid = liveSession.user.id;
+    try {
+      const [surveyResult, profileResult] = await Promise.all([
+        supabase.from('survey_responses').select('id').eq('user_id', uid).maybeSingle(),
+        supabase.from('profiles').select('is_premium').eq('id', uid).maybeSingle(),
+      ]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setAfterAuthRedirect(null);
-    setShowAuthModal(false);
-    navigate('/');
+      if (profileResult.data?.is_premium) {
+        navigate('/dashboard');
+      } else if (surveyResult.data) {
+        navigate('/subscription');
+      } else {
+        navigate('/survey');
+      }
+    } catch {
+      navigate('/survey');
+    }
   };
 
   if (loading || checkingFlow) {
@@ -103,7 +163,6 @@ function AppRoutes() {
           path="/"
           element={
             <LandingPage
-              user={user}
               onGetStarted={handleGetStarted}
               onLogin={() => {
                 setAuthMode('signin');
@@ -113,7 +172,6 @@ function AppRoutes() {
                 setAuthMode('signup');
                 setShowAuthModal(true);
               }}
-              onLogout={handleLogout}
             />
           }
         />
@@ -123,8 +181,9 @@ function AppRoutes() {
           element={
             user ? (
               <SurveyFunnel
-                onComplete={() => navigate('/subscription')}
-                onBack={() => navigate('/')}
+                onComplete={() => { setSurveyIntentional(false); navigate('/subscription'); }}
+                onBack={() => { setSurveyIntentional(false); navigate('/'); }}
+                initialStep={(location.state as { initialStep?: number })?.initialStep}
               />
             ) : (
               <Navigate to="/" replace />
@@ -134,17 +193,7 @@ function AppRoutes() {
 
         <Route
           path="/subscription"
-          element={
-            user ? (
-              <SubscriptionPage
-                onComplete={() => navigate('/dashboard')}
-                onGoHome={() => navigate('/')}
-                onBackToProfile={() => navigate('/survey')}
-              />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
+          element={user ? <SubscriptionPage onGoHome={() => navigate('/')} onBackToProfile={() => { setSurveyIntentional(true); navigate('/survey', { state: { initialStep: 5 } }); }} /> : <Navigate to="/" replace />}
         />
 
         <Route
@@ -163,10 +212,7 @@ function AppRoutes() {
 
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => {
-          setShowAuthModal(false);
-          setAfterAuthRedirect(null);
-        }}
+        onClose={() => setShowAuthModal(false)}
         initialMode={authMode}
       />
     </>
