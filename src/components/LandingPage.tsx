@@ -355,19 +355,19 @@ export function LandingPage({
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">48</p>
+              <p className="text-3xl font-bold text-white">43</p>
               <p className="text-gray-400 text-xs mt-2 leading-snug">Raw signals<br/>since 2018</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">60.4%</p>
+              <p className="text-3xl font-bold text-white">62.8%</p>
               <p className="text-gray-400 text-xs mt-2 leading-snug">Win rate —<br/>unfiltered baseline</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">1.67</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 67%</p>
+              <p className="text-3xl font-bold text-white">4.54</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 354%</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">2–3</p>
+              <p className="text-3xl font-bold text-white">5–6</p>
               <p className="text-gray-400 text-xs mt-2 leading-snug">TPI-confirmed signals<br/>per year (live system)</p>
             </div>
           </div>

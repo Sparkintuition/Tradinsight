@@ -34,7 +34,55 @@ interface DashboardProps {
 }
 
 // Raw signals oldest→newest for earnings simulation
+// Updated: APCRAF Strategy final params — PF 4.54, WR 62.79%, 43 trades
 const RAW_SIGNALS = [
+  { date: '26-Oct-19',  type: 'Long',  price: 9230,   tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2019-10-26' },
+  { date: '26-Feb-20',  type: 'Short', price: 8785,   tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2020-02-26' },
+  { date: '8-Apr-20',   type: 'Long',  price: 7361,   tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-04-08' },
+  { date: '25-Jun-20',  type: 'Short', price: 9249,   tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2020-06-25' },
+  { date: '22-Jul-20',  type: 'Long',  price: 9518,   tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-07-22' },
+  { date: '3-Sep-20',   type: 'Short', price: 10141,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2020-09-03' },
+  { date: '9-Oct-20',   type: 'Long',  price: 11051,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-10-09' },
+  { date: '30-Nov-20',  type: 'Long',  price: 19696,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-11-30' },
+  { date: '22-Apr-21',  type: 'Short', price: 51691,  tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2021-04-22' },
+  { date: '25-Jul-21',  type: 'Long',  price: 35381,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2021-07-25' },
+  { date: '10-Sep-21',  type: 'Short', price: 44851,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2021-09-10' },
+  { date: '5-Oct-21',   type: 'Long',  price: 51472,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2021-10-05' },
+  { date: '17-Nov-21',  type: 'Short', price: 60345,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2021-11-17' },
+  { date: '8-Feb-22',   type: 'Long',  price: 44043,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2022-02-08' },
+  { date: '22-Apr-22',  type: 'Short', price: 39709,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-04-22' },
+  { date: '18-Jul-22',  type: 'Long',  price: 22433,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-07-18' },
+  { date: '19-Aug-22',  type: 'Short', price: 20834,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2022-08-19' },
+  { date: '25-Oct-22',  type: 'Long',  price: 20080,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-10-25' },
+  { date: '8-Nov-22',   type: 'Short', price: 18547,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-11-08' },
+  { date: '10-Jan-23',  type: 'Long',  price: 17441,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-01-10' },
+  { date: '8-May-23',   type: 'Short', price: 27669,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2023-05-08' },
+  { date: '20-Jun-23',  type: 'Long',  price: 28308,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-06-20' },
+  { date: '3-Aug-23',   type: 'Short', price: 29194,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2023-08-03' },
+  { date: '16-Sep-23',  type: 'Long',  price: 26560,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-09-16' },
+  { date: '9-Nov-23',   type: 'Long',  price: 36701,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-11-09' },
+  { date: '8-Feb-24',   type: 'Long',  price: 45289,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-02-08' },
+  { date: '13-Apr-24',  type: 'Short', price: 63925,  tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2024-04-13' },
+  { date: '16-May-24',  type: 'Long',  price: 65235,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-05-16' },
+  { date: '14-Jun-24',  type: 'Short', price: 66044,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2024-06-14' },
+  { date: '19-Sep-24',  type: 'Long',  price: 62948,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-09-19' },
+  { date: '7-Dec-24',   type: 'Long',  price: 99832,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-12-07' },
+  { date: '23-Dec-24',  type: 'Short', price: 94881,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2024-12-23' },
+  { date: '18-Feb-25',  type: 'Short', price: 95672,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-02-18' },
+  { date: '8-May-25',   type: 'Long',  price: 103262, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2025-05-08' },
+  { date: '9-Jun-25',   type: 'Long',  price: 110263, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-06-09' },
+  { date: '19-Aug-25',  type: 'Short', price: 112873, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2025-08-19' },
+  { date: '11-Oct-25',  type: 'Short', price: 110644, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-10-11' },
+  { date: '4-Nov-25',   type: 'Short', price: 101497, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-11-04' },
+  { date: '18-Dec-25',  type: 'Short', price: 85516,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-12-18' },
+  { date: '4-Jan-26',   type: 'Long',  price: 91530,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-01-04' },
+  { date: '29-Jan-26',  type: 'Short', price: 84650,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-29' },
+  { date: '4-Mar-26',   type: 'Long',  price: 65400,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-04' },
+];
+
+// TPI-filtered signals (Strategy + TPI layer) — original curated list
+// These are the signals that passed BOTH the strategy AND the TPI filter
+const TPI_SIGNALS = [
   { date: '5-Oct-20',   type: 'Long',  price: 10580,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-10-05' },
   { date: '17-Apr-21',  type: 'Short', price: 59427,  tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2021-04-17' },
   { date: '24-Jul-21',  type: 'Long',  price: 34897,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2021-07-24' },
@@ -65,11 +113,11 @@ const RAW_SIGNALS = [
 ];
 
 // Compute cumulative $1,000 simulation, oldest→newest
-function computeEarnings() {
+function computeEarnings(signals: typeof RAW_SIGNALS) {
   let balance = 1000;
-  return RAW_SIGNALS.map((s, i) => {
+  return signals.map((s, i) => {
     if (i === 0) return { ...s, pnlPct: null, balance: 1000 };
-    const prev = RAW_SIGNALS[i - 1];
+    const prev = signals[i - 1];
     const pnlPct = prev.type === 'Long'
       ? (s.price - prev.price) / prev.price
       : (prev.price - s.price) / prev.price;
@@ -79,7 +127,8 @@ function computeEarnings() {
 }
 
 // Display newest→oldest (reverse)
-const SIGNAL_HISTORY = computeEarnings().reverse();
+const SIGNAL_HISTORY = computeEarnings(RAW_SIGNALS).reverse();
+const TPI_HISTORY = computeEarnings(TPI_SIGNALS).reverse();
 
 function TpiPill({ value }: { value: string }) {
   const v = value.toLowerCase();
@@ -109,6 +158,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [showFullHistory, setShowFullHistory] = useState(false);
+  const [historyTab, setHistoryTab] = useState<'strategy' | 'tpi'>('strategy');
   const { user, signOut } = useAuth();
 
   const fetchDashboardData = async () => {
@@ -179,7 +229,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     }
   };
 
-  const displayHistory = showFullHistory ? SIGNAL_HISTORY : SIGNAL_HISTORY.slice(0, 8);
+  const activeHistory = historyTab === 'strategy' ? SIGNAL_HISTORY : TPI_HISTORY;
+  const displayHistory = showFullHistory ? activeHistory : activeHistory.slice(0, 8);
 
   if (loading) {
     return (
@@ -486,19 +537,60 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
 
         {/* Signal History Table */}
         <div className="bg-[#121826] rounded-2xl border border-[#1F2937] overflow-hidden">
-          <div className="px-4 sm:px-6 py-4 border-b border-[#1F2937] flex items-start sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-white font-semibold">Signal History</h2>
-              <p className="text-gray-500 text-xs mt-0.5">Entries only · exits managed by you · $1,000 simulation (100% allocation, both directions)</p>
+          <div className="px-4 sm:px-6 pt-4 pb-0 border-b border-[#1F2937]">
+            <div className="flex items-start sm:items-center justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-white font-semibold">Signal History</h2>
+                <p className="text-gray-500 text-xs mt-0.5">Entries only · exits managed by you · $1,000 simulation (100% allocation)</p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
+                <span className="text-xs text-gray-500">{activeHistory.length} signals</span>
+                {!isPremium && (
+                  <span className="flex items-center gap-1 text-xs text-amber-400 border border-amber-500/20 bg-amber-500/8 px-2.5 py-1 rounded-full whitespace-nowrap">
+                    <Clock size={10} /> Latest delayed 1w
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
-              <span className="text-xs text-gray-500">{SIGNAL_HISTORY.length} signals</span>
-              {!isPremium && (
-                <span className="flex items-center gap-1 text-xs text-amber-400 border border-amber-500/20 bg-amber-500/8 px-2.5 py-1 rounded-full whitespace-nowrap">
-                  <Clock size={10} /> Latest delayed 1w
-                </span>
-              )}
+            {/* Tabs */}
+            <div className="flex gap-1">
+              <button
+                onClick={() => { setHistoryTab('strategy'); setShowFullHistory(false); }}
+                className={`px-4 py-2 text-xs font-medium rounded-t-lg border-b-2 transition-colors ${
+                  historyTab === 'strategy'
+                    ? 'border-cyan-400 text-cyan-400 bg-cyan-500/5'
+                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                Strategy Only
+                <span className="ml-1.5 text-[10px] opacity-60">{SIGNAL_HISTORY.length} signals</span>
+              </button>
+              <button
+                onClick={() => { setHistoryTab('tpi'); setShowFullHistory(false); }}
+                className={`px-4 py-2 text-xs font-medium rounded-t-lg border-b-2 transition-colors ${
+                  historyTab === 'tpi'
+                    ? 'border-[#D4A017] text-[#D4A017] bg-[#D4A017]/5'
+                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                Strategy + TPI
+                <span className="ml-1.5 text-[10px] opacity-60">{TPI_HISTORY.length} signals</span>
+              </button>
             </div>
+          </div>
+          {/* Tab description */}
+          <div className={`px-4 sm:px-6 py-2.5 border-b border-[#1F2937] text-xs ${
+            historyTab === 'strategy' ? 'bg-[#0F172A]/30' : 'bg-[#D4A017]/5'
+          }`}>
+            {historyTab === 'strategy' ? (
+              <p className="text-gray-500">
+                Raw strategy signals — <span className="text-gray-400">no TPI filter applied.</span> Some of these would be skipped by the live system. This is the baseline.
+              </p>
+            ) : (
+              <p className="text-gray-500">
+                TPI-confirmed signals only — <span className="text-[#D4A017]">the live Tradinsight system.</span> Fewer trades, higher conviction. TPI and Value columns show market conditions at signal time.
+              </p>
+            )}
           </div>
 
           {/* Desktop table */}
@@ -509,8 +601,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   <th className="text-left px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Date</th>
                   <th className="text-left px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Direction</th>
                   <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">BTC Price</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">TPI</th>
-                  <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Value</th>
+                  {historyTab === 'tpi' && <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">TPI</th>}
+                  {historyTab === 'tpi' && <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Value</th>}
                   <th className="text-right px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">$1k Sim.</th>
                 </tr>
               </thead>
@@ -545,16 +637,20 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                       <td className={`px-4 py-3.5 text-right text-gray-200 text-xs font-mono font-medium ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
                         ${signal.price.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3.5 text-center">
-                        {isLatestBlurred
-                          ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
-                          : <TpiPill value={signal.tpiMedium} />}
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        {isLatestBlurred
-                          ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
-                          : <TpiPill value={signal.tpiLong} />}
-                      </td>
+                      {historyTab === 'tpi' && (
+                        <td className="px-4 py-3.5 text-center">
+                          {isLatestBlurred
+                            ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
+                            : <TpiPill value={signal.tpiMedium} />}
+                        </td>
+                      )}
+                      {historyTab === 'tpi' && (
+                        <td className="px-4 py-3.5 text-center">
+                          {isLatestBlurred
+                            ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
+                            : <TpiPill value={signal.tpiLong} />}
+                        </td>
+                      )}
                       <td className={`px-6 py-3.5 text-right ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
                         {signal.pnlPct === null ? (
                           <span className="text-gray-500 text-xs font-mono">$1,000</span>
@@ -616,7 +712,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                       <span className={`text-gray-300 text-xs font-mono ${isLatestBlurred ? 'blur-sm' : ''}`}>
                         ${isLatestBlurred ? '——' : signal.price.toLocaleString()}
                       </span>
-                      {!isLatestBlurred && (
+                      {!isLatestBlurred && historyTab === 'tpi' && (
                         <div className="flex items-center gap-1.5 mt-1.5">
                           <TpiPill value={signal.tpiMedium} />
                           <TpiPill value={signal.tpiLong} />
@@ -655,7 +751,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
               onClick={() => setShowFullHistory(!showFullHistory)}
               className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium whitespace-nowrap"
             >
-              {showFullHistory ? <><ChevronUp size={14} />Show less</> : <><ChevronDown size={14} />All {SIGNAL_HISTORY.length} signals</>}
+              {showFullHistory ? <><ChevronUp size={14} />Show less</> : <><ChevronDown size={14} />All {activeHistory.length} signals</>}
             </button>
           </div>
 
