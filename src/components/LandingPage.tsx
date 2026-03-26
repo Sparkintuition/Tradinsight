@@ -386,7 +386,7 @@ export function LandingPage({
             Growth of $1,000 — <span className="text-gray-300">raw strategy signals, no TPI filter.</span>
           </p>
           <p className="text-gray-500 text-xs mb-8">
-            This includes signals the TPI would have skipped. The live Tradinsight system applies the filter on top — targeting only the setups where everything aligns.
+            43 signals since 2018 · 4.54 profit factor · 62.8% win rate. This includes signals the TPI would have skipped. The live Tradinsight system applies the filter on top — targeting only the highest-conviction setups.
           </p>
           <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-4 shadow-lg shadow-black/20">
             <img src="/equity.png" alt="Equity Curve" className="rounded-xl w-full" />

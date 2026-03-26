@@ -113,16 +113,23 @@ const TPI_SIGNALS = [
 ];
 
 // Compute cumulative $1,000 simulation, oldest→newest
+// Each signal shows its OWN trade result (entry at this signal, exit at next signal)
+// Last signal (current open) shows live P&L via btcPrice
 function computeEarnings(signals: typeof RAW_SIGNALS) {
   let balance = 1000;
   return signals.map((s, i) => {
-    if (i === 0) return { ...s, pnlPct: null, balance: 1000 };
-    const prev = signals[i - 1];
-    const pnlPct = prev.type === 'Long'
-      ? (s.price - prev.price) / prev.price
-      : (prev.price - s.price) / prev.price;
-    balance = balance * (1 + pnlPct);
-    return { ...s, pnlPct: pnlPct * 100, balance: Math.round(balance) };
+    const next = signals[i + 1];
+    if (!next) {
+      // Last signal = currently open, no closed P&L yet
+      return { ...s, pnlPct: null, balance: Math.round(balance) };
+    }
+    const pnlPct = s.type === 'Long'
+      ? (next.price - s.price) / s.price
+      : (s.price - next.price) / s.price;
+    const newBalance = balance * (1 + pnlPct);
+    const result = { ...s, pnlPct: pnlPct * 100, balance: Math.round(newBalance) };
+    balance = newBalance;
+    return result;
   });
 }
 
@@ -159,6 +166,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   const [loading, setLoading] = useState(true);
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [historyTab, setHistoryTab] = useState<'strategy' | 'tpi'>('strategy');
+  const [btcPrice, setBtcPrice] = useState<number | null>(null);
   const { user, signOut } = useAuth();
 
   const fetchDashboardData = async () => {
@@ -188,6 +196,22 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   };
 
   useEffect(() => { if (!user) return; fetchDashboardData(); }, [user]);
+
+  // Fetch live BTC price for open position P&L
+  useEffect(() => {
+    const fetchBtcPrice = async () => {
+      try {
+        const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+        const data = await res.json();
+        setBtcPrice(parseFloat(data.price));
+      } catch {
+        setBtcPrice(null);
+      }
+    };
+    fetchBtcPrice();
+    const interval = setInterval(fetchBtcPrice, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!user || !profile?.is_premium) return;
@@ -229,7 +253,47 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     }
   };
 
-  const activeHistory = historyTab === 'strategy' ? SIGNAL_HISTORY : TPI_HISTORY;
+  // Merge latest Supabase signal into history if it's newer than hardcoded array
+  const DELAY_MS_CONST = 7 * 24 * 60 * 60 * 1000;
+  const buildHistory = (baseHistory: typeof SIGNAL_HISTORY) => {
+    if (!activeSignal) return baseHistory;
+    const latestHardcoded = baseHistory[0]; // newest in reversed array
+    const signalIsoDate = activeSignal.created_at.split('T')[0];
+    const signalDate = new Date(activeSignal.created_at).getTime();
+    const isVisible = isPremium ||
+      new Date().getTime() - signalDate >= DELAY_MS_CONST;
+    if (!isVisible) return baseHistory; // hide entirely for free users if < 1 week
+
+    const liveEntry = {
+      date: new Date(activeSignal.created_at).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: '2-digit'
+      }).replace(/ /g, '-'),
+      type: activeSignal.signal_type?.toLowerCase() === 'long' ? 'Long' : 'Short',
+      price: activeSignal.signal_price,
+      tpiMedium: 'Positive',
+      tpiLong: 'Neutral',
+      isoDate: signalIsoDate,
+      pnlPct: null as null,
+      balance: 1000,
+    };
+
+    // If live signal date matches latest hardcoded entry — replace it
+    // avoids duplicate rows when webhook fires on same day as hardcoded entry
+    if (latestHardcoded?.isoDate === signalIsoDate) {
+      return [liveEntry, ...baseHistory.slice(1)];
+    }
+
+    // Only prepend if genuinely newer than hardcoded latest
+    const latestHardcodedDate = latestHardcoded?.isoDate
+      ? new Date(latestHardcoded.isoDate).getTime() : 0;
+    if (signalDate <= latestHardcodedDate) return baseHistory;
+
+    return [liveEntry, ...baseHistory];
+  };
+
+  const rawHistory  = buildHistory(SIGNAL_HISTORY);
+  const tpiHistory  = buildHistory(TPI_HISTORY);
+  const activeHistory = historyTab === 'strategy' ? rawHistory : tpiHistory;
   const displayHistory = showFullHistory ? activeHistory : activeHistory.slice(0, 8);
 
   if (loading) {
@@ -603,15 +667,14 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   <th className="text-right px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">BTC Price</th>
                   {historyTab === 'tpi' && <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">TPI</th>}
                   {historyTab === 'tpi' && <th className="text-center px-4 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Value</th>}
-                  <th className="text-right px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">$1k Sim.</th>
+                  <th className="text-right px-6 py-3 text-gray-500 text-xs font-medium uppercase tracking-wider">Trade Result</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1F2937]/50">
                 {displayHistory.map((signal: any, i: number) => {
-                  const signalAgeMs = signal.isoDate
-                    ? new Date().getTime() - new Date(signal.isoDate).getTime()
-                    : DELAY_MS + 1;
-                  const isLatestBlurred = !isPremium && i === 0 && signalAgeMs < DELAY_MS;
+                  // No blur — new signals are hidden entirely for free users
+                  // (handled in buildHistory — they never appear in displayHistory)
+                  const isLatestBlurred = false;
                   return (
                     <tr key={i} className={`transition-colors hover:bg-[#0F172A]/50 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}>
                       <td className={`px-6 py-3.5 text-gray-300 text-xs font-mono ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
@@ -652,7 +715,28 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                         </td>
                       )}
                       <td className={`px-6 py-3.5 text-right ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
-                        {signal.pnlPct === null ? (
+                        {i === 0 && btcPrice && signal.price ? (() => {
+                          // Live P&L: % change from entry price to current BTC price
+                          const livePnlPct = signal.type === 'Long'
+                            ? (btcPrice - signal.price) / signal.price * 100
+                            : (signal.price - btcPrice) / signal.price * 100;
+                          // Running balance: previous signal's balance × live return
+                          const prevBalance = displayHistory[1]?.balance ?? 1000;
+                          const liveBalance = prevBalance * (1 + livePnlPct / 100);
+                          const fmt = (n: number) => n >= 1000000
+                            ? (n / 1000000).toFixed(2) + 'M'
+                            : n >= 1000 ? (n / 1000).toFixed(1) + 'k'
+                            : Math.round(n).toLocaleString();
+                          return (
+                            <div>
+                              <div className={`text-xs font-bold font-mono ${livePnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {livePnlPct >= 0 ? '+' : ''}{livePnlPct.toFixed(1)}%
+                                <span className="text-gray-600 font-normal text-[9px] ml-1">live</span>
+                              </div>
+                              <div className="text-gray-400 text-[10px] font-mono mt-0.5">${fmt(liveBalance)}</div>
+                            </div>
+                          );
+                        })() : signal.pnlPct === null ? (
                           <span className="text-gray-500 text-xs font-mono">$1,000</span>
                         ) : (
                           <div>
@@ -679,10 +763,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
           {/* Mobile cards */}
           <div className="md:hidden divide-y divide-[#1F2937]/50">
             {displayHistory.map((signal: any, i: number) => {
-              const signalAgeMs = signal.isoDate
-                ? new Date().getTime() - new Date(signal.isoDate).getTime()
-                : DELAY_MS + 1;
-              const isLatestBlurred = !isPremium && i === 0 && signalAgeMs < DELAY_MS;
+              // No blur — new signals hidden entirely for free users
+              const isLatestBlurred = false;
               return (
                 <div key={i} className={`px-4 py-4 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}>
                   <div className="flex items-center justify-between mb-2">
@@ -719,22 +801,42 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                         </div>
                       )}
                     </div>
-                    {!isLatestBlurred && signal.pnlPct !== null && (
-                      <div className="text-right">
-                        <div className={`text-xs font-bold ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {signal.pnlPct >= 0 ? '+' : ''}{signal.pnlPct.toFixed(1)}%
+                    {!isLatestBlurred && (
+                      i === 0 && btcPrice && signal.price ? (() => {
+                        const livePnlPct = signal.type === 'Long'
+                          ? (btcPrice - signal.price) / signal.price * 100
+                          : (signal.price - btcPrice) / signal.price * 100;
+                        const prevBalance = displayHistory[1]?.balance ?? 1000;
+                        const liveBalance = prevBalance * (1 + livePnlPct / 100);
+                        const fmt = (n: number) => n >= 1000000
+                          ? (n / 1000000).toFixed(2) + 'M'
+                          : n >= 1000 ? (n / 1000).toFixed(1) + 'k'
+                          : Math.round(n).toLocaleString();
+                        return (
+                          <div className="text-right">
+                            <div className={`text-xs font-bold ${livePnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {livePnlPct >= 0 ? '+' : ''}{livePnlPct.toFixed(1)}%
+                              <span className="text-gray-600 font-normal text-[9px] ml-1">live</span>
+                            </div>
+                            <div className="text-gray-500 text-[10px] font-mono mt-0.5">${fmt(liveBalance)}</div>
+                          </div>
+                        );
+                      })() : signal.pnlPct !== null ? (
+                        <div className="text-right">
+                          <div className={`text-xs font-bold ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {signal.pnlPct >= 0 ? '+' : ''}{signal.pnlPct.toFixed(1)}%
+                          </div>
+                          <div className="text-gray-500 text-[10px] font-mono mt-0.5">
+                            ${signal.balance >= 1000000
+                              ? (signal.balance / 1000000).toFixed(2) + 'M'
+                              : signal.balance >= 1000
+                              ? (signal.balance / 1000).toFixed(1) + 'k'
+                              : signal.balance.toLocaleString()}
+                          </div>
                         </div>
-                        <div className="text-gray-500 text-[10px] font-mono mt-0.5">
-                          ${signal.balance >= 1000000
-                            ? (signal.balance / 1000000).toFixed(2) + 'M'
-                            : signal.balance >= 1000
-                            ? (signal.balance / 1000).toFixed(1) + 'k'
-                            : signal.balance.toLocaleString()}
-                        </div>
-                      </div>
-                    )}
-                    {!isLatestBlurred && signal.pnlPct === null && (
-                      <span className="text-gray-500 text-xs font-mono">Start $1,000</span>
+                      ) : (
+                        <span className="text-gray-500 text-xs font-mono">Start $1,000</span>
+                      )
                     )}
                   </div>
                 </div>
@@ -745,7 +847,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
           {/* Footer */}
           <div className="px-4 sm:px-6 py-3 border-t border-[#1F2937] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-gray-600 text-xs leading-relaxed">
-              Simulation: $1,000 start · 100% allocation · no fees · not financial advice
+              Simulation: $1,000 start · 100% allocation · no fees · each row shows the closed trade P&L from previous signal · not financial advice
             </p>
             <button
               onClick={() => setShowFullHistory(!showFullHistory)}
