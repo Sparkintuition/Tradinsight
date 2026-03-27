@@ -209,7 +209,7 @@ export function LandingPage({
                   </div>
                 </div>
                 <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
-                  <p className="text-gray-500 text-xs mb-1">Entry Price</p>
+                  <p className="text-gray-500 text-xs mb-1">Triggered Price</p>
                   <p className="text-white font-bold text-lg">$65,400</p>
                 </div>
                 <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
@@ -233,21 +233,16 @@ export function LandingPage({
                 </p>
               </div>
 
-              {/* Premium analysis — blurred for non-members */}
-              <div className="relative bg-[#0F172A]/70 rounded-xl p-4 border border-[#C69214]/20 overflow-hidden">
-                <div className="blur-sm select-none pointer-events-none">
-                  <p className="text-[#D4A017] text-xs font-medium mb-2">Signal Analysis (Premium)</p>
-                  <p className="text-gray-300 text-xs leading-relaxed">
-                    RSI showing oversold on 4H timeframe. ADX confirming strong trend momentum above 25. CCI crossing from negative territory. TPI medium term shifted positive — SPX correlation aligned. Value indicator neutral, supporting entry at current levels.
-                  </p>
+              {/* Premium analysis — shown as example */}
+              <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#C69214]/20">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Zap size={11} className="text-[#D4A017]" />
+                  <p className="text-[#D4A017] text-xs font-medium">Signal Analysis</p>
+                  <span className="ml-auto text-[10px] text-gray-600 border border-[#1F2937] rounded px-1.5 py-0.5">Premium</span>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center bg-[#0B0F19]/40 backdrop-blur-[1px]">
-                  <div className="text-center px-4">
-                    <Zap size={16} className="text-[#D4A017] mx-auto mb-1.5" />
-                    <p className="text-[#D4A017] text-xs font-semibold">Premium — Full Analysis</p>
-                    <p className="text-gray-500 text-[10px] mt-0.5">See the complete TPI reasoning behind every signal</p>
-                  </div>
-                </div>
+                <p className="text-gray-300 text-xs leading-relaxed">
+                  BTC has pulled back to a technically oversold level while the broader trend remains intact. Momentum is recovering, the macro environment is supportive, and on-chain data suggests BTC is fairly valued — not overextended. The strategy and TPI are in agreement. This is the type of setup the system waits months for.
+                </p>
               </div>
             </div>
 
