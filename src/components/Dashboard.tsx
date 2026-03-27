@@ -15,6 +15,8 @@ interface Signal {
   analysis: string;
   status: string;
   created_at: string;
+  tpi_value_indicator?: string;   // Positive | Neutral | Negative — set by TPI app
+  tpi_medium_term?: string;       // Positive | Neutral | Negative — set by TPI app
 }
 
 interface UserProfile {
@@ -474,7 +476,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-white text-xs font-semibold">TPI — Medium Term</span>
-                      <TpiPill value={visibleSignal?.analysis?.includes('Positive') ? 'Positive' : 'Neutral'} />
+                      <TpiPill value={activeSignal?.tpi_medium_term || 'Neutral'} />
                     </div>
                     <p className="text-gray-500 text-xs leading-relaxed mb-3">
                       Aggregates trend and momentum signals across multiple timeframes and correlated assets.
@@ -489,7 +491,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-white text-xs font-semibold">Value Indicator — Long Term</span>
-                      <TpiPill value="Neutral" />
+                      <TpiPill value={activeSignal?.tpi_value_indicator || 'Neutral'} />
                     </div>
                     <p className="text-gray-500 text-xs leading-relaxed mb-3">
                       On-chain fundamentals that reveal where BTC sits in its long-term market cycle.
@@ -502,7 +504,11 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   </div>
                 </div>
 
-                <p className="text-gray-600 text-xs mt-4 text-center">Updated manually · Check back regularly</p>
+                <p className="text-gray-600 text-xs mt-4 text-center">
+                  {activeSignal?.tpi_value_indicator
+                    ? 'Updated from TPI app'
+                    : 'Updated manually · Check back regularly'}
+                </p>
               </div>
             ) : (
               <div className="bg-[#121826] rounded-2xl p-5 border border-[#1F2937] h-full flex flex-col">

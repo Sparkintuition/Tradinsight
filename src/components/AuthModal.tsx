@@ -72,8 +72,8 @@ export function AuthModal({
 
         <p className="text-gray-400 mb-6">
           {mode === 'signin'
-            ? 'Sign in to access your BTC signals and dashboard.'
-            : 'Create an account to start your free assessment.'}
+            ? 'Sign in to access your signals and dashboard.'
+            : 'Create an account to see how the system fits your approach.'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

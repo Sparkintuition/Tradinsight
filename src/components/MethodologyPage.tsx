@@ -120,10 +120,10 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <>
         <p>
-          This is a deliberate design choice, not a limitation.
+          Deliberate design choice, not a limitation.
         </p>
         <p>
-          Every trader has a different risk appetite, portfolio size, time horizon, and emotional tolerance for drawdowns. A stop loss that makes sense for someone with 5% of their net worth in BTC is completely wrong for someone with 50%. Providing fixed exit levels would create a false sense of precision and could lead users to make decisions that do not fit their personal situation.
+          Every trader has a different risk appetite, portfolio size, time horizon, and tolerance for drawdowns. A stop loss that makes sense for someone with 5% of their net worth in BTC is the wrong number for someone with 50%. Providing fixed exit levels would create a false sense of precision and push users into decisions that don't fit their situation.
         </p>
         <p>
           What Tradinsight does is identify <span className="text-white font-medium">when</span> a high-probability opportunity exists — the entry. What you do with it from there should reflect your own risk management framework:
@@ -337,7 +337,7 @@ export function MethodologyPage({ onNavigateDashboard, onUnlockPremium }: Method
             How Tradinsight Works
           </h1>
           <p className="text-gray-400 leading-relaxed">
-            Everything you need to understand the strategy, the TPI system, and the philosophy behind every signal. Read this before acting on any signal.
+            Everything behind the strategy, the TPI system, and the reasoning behind every signal. Read this once — then trust the data.
           </p>
         </div>
 
@@ -374,7 +374,7 @@ export function MethodologyPage({ onNavigateDashboard, onUnlockPremium }: Method
         <div className="mt-10 rounded-2xl border border-[#1F2937] bg-[#121826] p-6 text-center">
           <p className="text-gray-500 text-xs leading-relaxed">
             Tradinsight is an informational tool. All signals are based on a systematic methodology and do not constitute financial advice.
-            Past performance does not guarantee future results. Always manage your own risk.
+            Past performance does not guarantee future results. The entry is the system's job. Managing your downside is yours.
           </p>
           <button
             onClick={onNavigateDashboard}

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradinsight — Full App Audit Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; color: #111827; font-size: 14px; line-height: 1.6; }
+    .page { max-width: 900px; margin: 0 auto; padding: 48px 40px; background: #fff; min-height: 100vh; }
+    h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+    h2 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+    h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .meta { color: #6b7280; font-size: 13px; margin-bottom: 32px; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .critical { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .warning  { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .suggestion { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .finding { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; background: #fff; }
+    .finding-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .finding-title { font-weight: 700; font-size: 14px; color: #1e293b; }
+    .finding-body p { color: #374151; font-size: 13px; margin-bottom: 5px; }
+    .finding-body .label { font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 8px; margin-bottom: 2px; }
+    .finding-body code { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 5px; font-family: 'Menlo', 'Consolas', monospace; font-size: 12px; color: #0f172a; }
+    .exec-summary { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+    .exec-summary p { color: #374151; font-size: 14px; margin-bottom: 8px; }
+    .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+    .stat-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; min-width: 100px; text-align: center; }
+    .stat-box .num { font-size: 24px; font-weight: 800; }
+    .stat-box .lbl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+    .num.red { color: #dc2626; }
+    .num.amber { color: #d97706; }
+    .num.green { color: #16a34a; }
+    .priority-list { counter-reset: priority; list-style: none; }
+    .priority-list li { counter-increment: priority; display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+    .priority-list li:last-child { border-bottom: none; }
+    .priority-num { background: #0f172a; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+    .priority-text strong { display: block; font-weight: 700; color: #1e293b; margin-bottom: 2px; }
+    .priority-text span { color: #6b7280; font-size: 13px; }
+    .section-note { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+    @media print {
+      body { background: white; }
+      .page { padding: 20px; }
+      .finding { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Tradinsight — Full App Audit</h1>
+  <p class="meta">Date: 26 March 2026 &nbsp;·&nbsp; Scope: src/components/, src/contexts/, src/App.tsx &nbsp;·&nbsp; Auditor: Claude Code</p>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="exec-summary">
+    <h3>Executive Summary</h3>
+    <p style="margin-top:8px">
+      The codebase is clean, well-structured, and production-ready at a junior-to-mid level. Auth and routing logic is thoughtfully built. The biggest risks are <strong>TypeScript type errors caused by silent prop mismatches</strong>, <strong>hardcoded/fabricated TPI state values</strong> shown to paying premium users, and <strong>several console.error() calls left in production code</strong>. There are no hardcoded secrets. Supabase env vars are correctly externalized. The premium gating logic is structurally sound, though it depends entirely on Supabase RLS being correctly configured (unverifiable from the frontend alone).
+    </p>
+    <div class="stats-row">
+      <div class="stat-box"><div class="num red">4</div><div class="lbl">Critical</div></div>
+      <div class="stat-box"><div class="num amber">9</div><div class="lbl">Warnings</div></div>
+      <div class="stat-box"><div class="num green">7</div><div class="lbl">Suggestions</div></div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <h2>🔴 Critical Findings</h2>
+  <p class="section-note">Must fix before next significant user-facing update.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge critical">Critical</span>
+      <span class="finding-title">C1 — SubscriptionPage silently drops props: onGoHome and onBackToProfile are never used</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>SubscriptionPage</code> is declared with no props interface (<code>export function SubscriptionPage()</code>), but <code>App.tsx</code> passes <code>onGoHome</code> and <code>onBackToProfile</code> to it. Both are silently ignored. The <code>onBackToProfile</code> callback is specifically designed to let a user navigate back to the survey at step 5 — that feature is completely broken.</p>
+      <p class="label">Why it matters</p>
+      <p>TypeScript would flag this as a type error. The "back to profile" flow (used in the <code>/survey?initialStep=5</code> path) does not work. Any user who wants to revise their survey answers before subscribing cannot do so.</p>
+      <p class="label">How to fix</p>
+      <p>Add a props interface to <code>SubscriptionPage</code>: <code>interface Props &#123; onGoHome: () => void; onBackToProfile: () => void; &#125;</code> and wire them into the UI (e.g. a back button in the header).</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge critical">Critical</span>
+      <span class="finding-title">C2 — TPI state shown to premium users is hardcoded/fabricated, not real data</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p>In <code>Dashboard.tsx</code>, the live TPI panel shown to premium users displays <code>TpiPill value={visibleSignal?.analysis?.includes('Positive') ? 'Positive' : 'Neutral'}</code> (line 477) for Medium Term, and always <code>value="Neutral"</code> (line 493) for the Value Indicator. Additionally, <code>buildHistory()</code> injects <code>tpiMedium: 'Positive', tpiLong: 'Neutral'</code> hardcoded for any live Supabase signal (lines 273–274).</p>
+      <p class="label">Why it matters</p>
+      <p>Premium users are paying $19.99/month specifically for TPI state access. Showing them fabricated values (TPI inferred from whether the word "Positive" appears anywhere in analysis text) is both inaccurate and a product integrity issue. The Value Indicator is permanently "Neutral" for all users at all times.</p>
+      <p class="label">How to fix</p>
+      <p>Add <code>tpi_medium</code> and <code>tpi_long</code> columns to the <code>crypto_signals</code> table. Store real values when inserting a signal. Read these fields directly in the Dashboard instead of inferring them from analysis text.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge critical">Critical</span>
+      <span class="finding-title">C3 — SurveyFunnel ignores initialStep prop — TypeScript type error, retake flow broken</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>App.tsx</code> passes <code>initialStep={(location.state as &#123; initialStep?: number &#125;)?.initialStep}</code> to <code>SurveyFunnel</code>, but <code>SurveyFunnelProps</code> only declares <code>onComplete</code> and <code>onBack</code>. The <code>initialStep</code> prop is not in the interface and is never used inside the component. The component always starts at step 1 (or restores from sessionStorage).</p>
+      <p class="label">Why it matters</p>
+      <p>The "back to profile" flow from the subscription page is supposed to drop the user at step 5 (the results screen). This is completely non-functional. TypeScript strict mode would catch this.</p>
+      <p class="label">How to fix</p>
+      <p>Add <code>initialStep?: number</code> to <code>SurveyFunnelProps</code> and use it in the <code>useState</code> initializer: <code>useState(parsedSurveyState?.step || initialStep || 1)</code>.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge critical">Critical</span>
+      <span class="finding-title">C4 — alert() used for production errors in SubscriptionPage and SurveyFunnel</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>SubscriptionPage.tsx:134</code> uses <code>alert(error.message)</code> when checkout fails. <code>SurveyFunnel.tsx:292</code> uses <code>alert()</code> when survey save fails.</p>
+      <p class="label">Why it matters</p>
+      <p><code>alert()</code> blocks the UI thread, looks completely out of place on a dark-themed premium fintech product, and can't be styled or dismissed gracefully. It's jarring on mobile.</p>
+      <p class="label">How to fix</p>
+      <p>Replace with inline error state (already done correctly in every other form: <code>AuthModal</code>, <code>AccountPage</code>, <code>ForgotPassword</code>). Add an <code>error</code> state to both components and render an error banner like the pattern used elsewhere.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <h2>🟡 Warnings</h2>
+  <p class="section-note">Should be fixed — impact user experience, trust, or code maintainability.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W1 — console.error() calls left in production code across 5 files</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p>Found in: <code>AuthContext.tsx:42</code>, <code>App.tsx:136</code>, <code>Dashboard.tsx:192</code>, <code>AccountPage.tsx:64</code>, <code>SubscriptionPage.tsx:56</code>. These are real errors being silently logged to the browser console, visible to technically-minded users.</p>
+      <p class="label">Why it matters</p>
+      <p>Leaks implementation details (table names, query structure). On most hosting platforms, console errors are ignored — if a Supabase query fails silently, the user sees nothing and support has no record of it.</p>
+      <p class="label">How to fix</p>
+      <p>Route errors to a proper logging service (e.g. Sentry free tier) or at minimum surface them as UI error states rather than silent console logs.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W2 — DELAY_MS defined twice in Dashboard.tsx (dead duplicate constant)</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>Dashboard.tsx:229</code> defines <code>const DELAY_MS = 7 * 24 * 60 * 60 * 1000</code> and line 257 defines the identical <code>const DELAY_MS_CONST = 7 * 24 * 60 * 60 * 1000</code>. The first one is unused.</p>
+      <p class="label">Why it matters</p>
+      <p>If someone changes one but not the other, the delay logic becomes inconsistent. The unused constant adds confusion.</p>
+      <p class="label">How to fix</p>
+      <p>Remove the unused <code>DELAY_MS</code> and keep only <code>DELAY_MS_CONST</code> (or rename it to <code>DELAY_MS</code>).</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W3 — Dead blur code in Dashboard: isLatestBlurred is always false but conditionals remain</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p>In both the desktop table and mobile cards, <code>const isLatestBlurred = false</code> is declared, followed by roughly 30 lines of conditional JSX that checks <code>isLatestBlurred</code>. This code can never execute. It's clear the blur approach was replaced by the "hide entirely" approach — but the dead conditionals were left in.</p>
+      <p class="label">Why it matters</p>
+      <p>Adds ~60 lines of dead JSX, confusing anyone maintaining the code. The comment <code>"No blur — new signals are hidden entirely"</code> makes clear this is intentional — but the code wasn't cleaned up.</p>
+      <p class="label">How to fix</p>
+      <p>Remove the <code>isLatestBlurred</code> variable and all branches that depend on it. Keep only the non-blurred rendering paths.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W4 — signal: any type in Dashboard table rendering</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>Dashboard.tsx:674</code>: <code>displayHistory.map((signal: any, i: number)</code> — same on the mobile cards. The signal objects have a known shape (from the hardcoded arrays) but are typed as <code>any</code> in the render loop.</p>
+      <p class="label">Why it matters</p>
+      <p>Suppresses TypeScript checking for the entire render path. Typos in property names (e.g. <code>signal.prce</code>) would be silently undefined instead of caught at compile time.</p>
+      <p class="label">How to fix</p>
+      <p>Define a <code>HistoryEntry</code> type matching the shape of <code>computeEarnings()</code> output and use it in place of <code>any</code>.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W5 — SubscriptionPage: no navigation header, no back button</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p>The subscription page has no header, no logo, and no back/exit navigation. A user who arrives here mid-funnel has no obvious path except the browser back button.</p>
+      <p class="label">Why it matters</p>
+      <p>Removes context for who the product is from (no logo). On mobile, many users disable the browser navbar. This increases bounce rate and reduces trust.</p>
+      <p class="label">How to fix</p>
+      <p>Add a minimal sticky header with the Tradinsight logo and a back button (using the <code>onGoHome</code> prop once C1 is fixed).</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W6 — buildHistory() called on every render — not memoized</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>Dashboard.tsx:294–295</code>: <code>buildHistory(SIGNAL_HISTORY)</code> and <code>buildHistory(TPI_HISTORY)</code> are called directly in the render function. <code>buildHistory</code> iterates over up to 43 entries and constructs a new array on every single render — including renders triggered by the BTC price polling every 30s.</p>
+      <p class="label">Why it matters</p>
+      <p>The BTC price polling triggers a state update every 30s, which re-renders the Dashboard, which re-runs <code>buildHistory</code> twice. With 43 entries this is currently fast, but it will grow.</p>
+      <p class="label">How to fix</p>
+      <p>Wrap with <code>useMemo</code>: <code>const rawHistory = useMemo(() => buildHistory(SIGNAL_HISTORY), [activeSignal, isPremium])</code>.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W7 — App.tsx makes 2 Supabase queries on every route change for logged-in users</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p>The <code>resolveFlow</code> effect in <code>App.tsx</code> runs on every <code>location.pathname</code> change. For a logged-in user navigating between pages, it fires 2 Supabase queries (survey_responses + profiles) every time. This happens even when navigating between /dashboard → /account → /methodology repeatedly.</p>
+      <p class="label">Why it matters</p>
+      <p>Unnecessary latency and Supabase read quota usage on every navigation. The profile/survey data is unlikely to change between page navigations within the same session.</p>
+      <p class="label">How to fix</p>
+      <p>Cache the <code>isPremium</code> and <code>hasSurvey</code> results in React context or a <code>useRef</code> and only re-query when the user object changes (not on every path change).</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W8 — Signal count discrepancy: CLAUDE.md says 42 RAW_SIGNALS, actual array has 43</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>CLAUDE.md</code> states "RAW_SIGNALS (42 signals)" but the actual <code>RAW_SIGNALS</code> array in <code>Dashboard.tsx</code> contains 43 entries (Oct 2019 → Mar 2026). The landing page and subscription page both display "43 signals" which is correct — but the CLAUDE.md documentation is wrong.</p>
+      <p class="label">Why it matters</p>
+      <p>Future Claude Code sessions (and human developers) reading CLAUDE.md will think there are 42 signals and may off-by-one when adding new ones.</p>
+      <p class="label">How to fix</p>
+      <p>Update CLAUDE.md: "RAW_SIGNALS (43 signals)" and "TPI_SIGNALS (27 signals)".</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge warning">Warning</span>
+      <span class="finding-title">W9 — AccountPage uses re-sign-in to verify current password — triggers a full auth event</span>
+    </div>
+    <div class="finding-body">
+      <p class="label">What it is</p>
+      <p><code>AccountPage.tsx:89</code>: to verify the current password before changing it, the code calls <code>supabase.auth.signInWithPassword()</code>. This fires a new sign-in event which triggers <code>onAuthStateChange</code> in <code>AuthContext</code> and may cause unintended navigation via <code>resolveFlow</code> in App.tsx.</p>
+      <p class="label">Why it matters</p>
+      <p>In practice this seems stable (the user is already logged in, so resolveFlow just confirms their state), but it's a fragile pattern that could cause a redirect loop if the timing is unlucky, and it creates an unnecessary auth event in Supabase logs.</p>
+      <p class="label">How to fix</p>
+      <p>Supabase doesn't expose a "verify password without login" API, so the current approach is the best available option. Mitigate by adding a guard in <code>resolveFlow</code> that skips re-routing if <code>location.pathname === '/account'</code>.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <h2>🟢 Suggestions</h2>
+  <p class="section-note">Nice-to-have improvements — polish, future-proofing, conversion.</p>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S1 — No error boundary — a render crash takes down the entire app</span>
+    </div>
+    <div class="finding-body">
+      <p>There is no <code>ErrorBoundary</code> component anywhere. If any component throws during render (e.g. a malformed Supabase payload causing <code>signal.price.toLocaleString()</code> to crash), the entire app goes blank. Add a top-level <code>ErrorBoundary</code> in <code>App.tsx</code> with a friendly fallback UI.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S2 — Supabase client has no error handling for missing env vars</span>
+    </div>
+    <div class="finding-body">
+      <p><code>src/lib/supabase.ts</code> calls <code>createClient(supabaseUrl, supabaseAnonKey)</code> with no guard for undefined values. If <code>VITE_SUPABASE_URL</code> is missing in a deployment, the app fails silently with cryptic Supabase errors. Add: <code>if (!supabaseUrl || !supabaseAnonKey) throw new Error('Missing Supabase environment variables')</code>.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S3 — BTC price fetch has no CORS fallback if Binance blocks the request</span>
+    </div>
+    <div class="finding-body">
+      <p>The Binance API is fetched directly from the browser on a 30s interval. Binance can (and does) block requests from certain regions and network types. The catch block already handles failures gracefully by setting <code>btcPrice(null)</code>, but the live P&L row then shows nothing with no explanation. Consider adding a "price unavailable" label when <code>btcPrice</code> is null after the first fetch attempt.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S4 — signOut clears a localStorage key that is never written</span>
+    </div>
+    <div class="finding-body">
+      <p><code>AuthContext.tsx:120</code>: <code>localStorage.removeItem('tradinsight_flow')</code>. Searching the codebase, <code>tradinsight_flow</code> is never written to localStorage. This is likely a vestigial cleanup from an earlier navigation state system that was replaced by <code>surveyIntentional</code> in App.tsx. Safe to remove.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S5 — Mobile dashboard header hides username and plan type</span>
+    </div>
+    <div class="finding-body">
+      <p>On mobile (<code>sm:hidden</code>), the user's name and Free/Premium plan badge are hidden. For a paying premium user, not seeing their plan status on their primary screen is a missed trust signal. Consider showing a minimal plan badge (gold dot for premium) in the mobile header.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S6 — Conversion: no upgrade CTA visible when free user has no active signal</span>
+    </div>
+    <div class="finding-body">
+      <p>When there is no active signal, the signal card shows an empty state ("No active signal. Market conditions not met."). For free users in this state, there is no upgrade prompt in the top section — they would have to scroll down to the signal history table to see the upgrade banner. Consider adding a subtle upgrade nudge to the empty signal state for free users.</p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-header">
+      <span class="badge suggestion">Suggestion</span>
+      <span class="finding-title">S7 — Landing page: "How it Works" link only shows for logged-in users</span>
+    </div>
+    <div class="finding-body">
+      <p><code>LandingPage.tsx:27</code>: <code>onMethodology && (...)</code> — the "How it Works" nav link only renders if <code>onMethodology</code> is defined. In <code>App.tsx:202</code>, this prop is only passed when <code>user</code> exists. Logged-out visitors cannot navigate to the Methodology page from the landing page nav, even though it's a key trust-building page. Consider making it a direct <code>&lt;a href="/methodology"&gt;</code> or always passing the handler.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────── -->
+  <h2>✅ Priority Action List — Top 10 Fixes</h2>
+  <p class="section-note">Ordered by impact × effort. Do these first.</p>
+
+  <ol class="priority-list">
+    <li>
+      <div class="priority-num">1</div>
+      <div class="priority-text">
+        <strong>Fix SubscriptionPage props (C1)</strong>
+        <span>Add props interface, wire onGoHome + onBackToProfile into a header. The "revise your profile" flow is broken.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">2</div>
+      <div class="priority-text">
+        <strong>Fix SurveyFunnel initialStep prop (C3)</strong>
+        <span>Declare initialStep in the interface and use it. Required for the retake flow to work end-to-end.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">3</div>
+      <div class="priority-text">
+        <strong>Replace TPI hardcoded values with real DB fields (C2)</strong>
+        <span>Add tpi_medium + tpi_long to crypto_signals. This is what premium users are paying for.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">4</div>
+      <div class="priority-text">
+        <strong>Replace alert() with inline error UI (C4)</strong>
+        <span>SubscriptionPage and SurveyFunnel. 30-minute fix. Significant UX and brand quality improvement.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">5</div>
+      <div class="priority-text">
+        <strong>Remove dead blur code from Dashboard (W3)</strong>
+        <span>Delete the isLatestBlurred variable and all its branches. Reduces Dashboard.tsx by ~60 lines.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">6</div>
+      <div class="priority-text">
+        <strong>Remove duplicate DELAY_MS constant (W2)</strong>
+        <span>One-line fix. Prevents future divergence in the 1-week delay logic.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">7</div>
+      <div class="priority-text">
+        <strong>Add header + back button to SubscriptionPage (W5)</strong>
+        <span>Fixes trust + navigation. Required companion to C1 fix.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">8</div>
+      <div class="priority-text">
+        <strong>Memoize buildHistory() calls with useMemo (W6)</strong>
+        <span>Prevents redundant array iteration on every 30s BTC price tick.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">9</div>
+      <div class="priority-text">
+        <strong>Update CLAUDE.md signal count from 42 → 43 (W8)</strong>
+        <span>Documentation correctness. Prevents off-by-one errors when adding future signals.</span>
+      </div>
+    </li>
+    <li>
+      <div class="priority-num">10</div>
+      <div class="priority-text">
+        <strong>Add an ErrorBoundary component to App.tsx (S1)</strong>
+        <span>Prevents full white-screen crashes. A render error anywhere in the tree currently kills the whole app.</span>
+      </div>
+    </li>
+  </ol>
+
+  <div style="margin-top:48px; padding-top:20px; border-top:1px solid #e5e7eb;">
+    <p style="color:#9ca3af; font-size:12px; text-align:center">
+      Tradinsight Audit Report · Generated by Claude Code · SPARKIN LTD · Not financial advice
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

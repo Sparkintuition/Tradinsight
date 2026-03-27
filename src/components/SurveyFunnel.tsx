@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 interface SurveyFunnelProps {
   onComplete: () => void;
   onBack: () => void;
+  initialStep?: number;
 }
 
 function getProfile(
@@ -32,9 +33,9 @@ function getProfile(
       bullets: [
         'Signals fire every few weeks, not daily',
         'Each signal targets a major BTC trend, not intraday moves',
-        'Could work as a macro context layer on top of your existing approach',
+        'Could work as a macro context layer — knowing the bigger trend before executing shorter positions',
       ],
-      cta: 'See the Free Plan Anyway',
+      cta: 'Start Free and Verify the Track Record',
       color: 'amber',
     };
   }
@@ -132,12 +133,13 @@ const colorMap = {
 
 const TOTAL_STEPS = 5;
 
-export function SurveyFunnel({ onComplete, onBack }: SurveyFunnelProps) {
+export function SurveyFunnel({ onComplete, onBack, initialStep }: SurveyFunnelProps) {
   const savedSurveyState = sessionStorage.getItem('tradinsight_survey_state');
   const parsedSurveyState = savedSurveyState ? JSON.parse(savedSurveyState) : null;
 
-  const [step, setStep] = useState(parsedSurveyState?.step || 1);
+  const [step, setStep] = useState(parsedSurveyState?.step || initialStep || 1);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const { user } = useAuth();
 
   const [formData, setFormData] = useState(
@@ -287,12 +289,9 @@ export function SurveyFunnel({ onComplete, onBack }: SurveyFunnelProps) {
 
       saveSurveyState(TOTAL_STEPS);
       onComplete();
-    } catch (error: any) {
-      console.error('Error saving survey:', error);
-      alert(
-        error?.message ||
-          JSON.stringify(error) ||
-          'Could not save your survey. Please try again.'
+    } catch (error: unknown) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'Could not save your survey. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -354,8 +353,8 @@ export function SurveyFunnel({ onComplete, onBack }: SurveyFunnelProps) {
                 </p>
                 <p className="text-cyan-400 text-xs font-medium tracking-wide uppercase">
                   {step === TOTAL_STEPS
-                    ? 'Profile Complete'
-                    : 'Signal Profile Setup'}
+                    ? 'Your Result'
+                    : 'Finding Your Fit'}
                 </p>
               </div>
 
@@ -686,11 +685,18 @@ export function SurveyFunnel({ onComplete, onBack }: SurveyFunnelProps) {
 
                 <div className="rounded-xl border border-[#1F2937] bg-[#0F172A]/60 px-4 py-3 mb-5 text-center">
                   <p className="text-gray-400 text-xs leading-relaxed">
-                    <span className="text-white font-medium">Free plan available</span>{' '}
-                    — delayed signals so you can verify the track record before upgrading.
+                    <span className="text-white font-medium">Start free.</span>{' '}
+                    Verify 43 signals worth of track record before you commit.
                     No card required.
                   </p>
                 </div>
+
+                {submitError && (
+                  <div className="flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 mb-4">
+                    <AlertTriangle size={14} className="text-rose-400 shrink-0 mt-0.5" />
+                    <p className="text-rose-300 text-xs">{submitError}</p>
+                  </div>
+                )}
 
                 <button
                   type="button"

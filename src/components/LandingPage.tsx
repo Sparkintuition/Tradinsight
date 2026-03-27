@@ -106,9 +106,8 @@ export function LandingPage({
       <section className="container mx-auto px-4 py-6">
         <div className="max-w-3xl mx-auto rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
           <p className="text-amber-300 font-medium text-sm leading-relaxed">
-            ⚠️ <strong>Important:</strong> Tradinsight generates 5–6 high-conviction signals per year.
-            If you're looking for daily alerts or scalping signals, this isn't for you.
-            If you're looking for <em>meaningful</em> entries that capture major BTC trends — read on.
+            Tradinsight fires 5–6 signals per year — not because it can't find more, but because only those setups meet the full criteria.
+            If you need constant activity, this is the wrong tool. If you understand that <em>discipline creates an edge</em>, keep reading.
           </p>
         </div>
       </section>
@@ -156,7 +155,7 @@ export function LandingPage({
               <div className="text-xs font-semibold text-cyan-400 tracking-widest uppercase mb-2">Layer 3</div>
               <h3 className="text-white font-semibold text-lg mb-2">Aligned Entry</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Only when both layers agree does Tradinsight generate an actionable signal — with entry context, direction, and the reasoning behind it.
+                Only when both layers agree does Tradinsight generate an entry signal — with the price, direction, TPI state, and the full reasoning behind it.
               </p>
             </div>
           </div>
@@ -298,7 +297,7 @@ export function LandingPage({
               <div className="bg-[#121826] rounded-2xl border border-[#1F2937] p-4 text-center">
                 <Clock size={14} className="text-gray-500 mx-auto mb-2" />
                 <p className="text-gray-400 text-xs leading-relaxed">
-                  Signal stays active until the opposite direction fires. No exit target — trade management is yours.
+                  A signal stays active until the next signal fires in the opposite direction. No exit target — trade management is always yours.
                 </p>
               </div>
 
@@ -327,7 +326,7 @@ export function LandingPage({
 
           {/* Caption */}
           <p className="text-center text-gray-600 text-xs mt-6">
-            This is a real signal from 4th March 2026. Premium members received this alert in real time.
+            Real signal, 4th March 2026. Premium members saw this the moment it fired. Free members will see it after 1 week.
           </p>
         </div>
       </section>
@@ -392,7 +391,7 @@ export function LandingPage({
             <img src="/equity.png" alt="Equity Curve" className="rounded-xl w-full" />
           </div>
           <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-2">
-            <span className="text-cyan-400 text-xs font-medium">The TPI filter removes low-conviction entries — designed to make this curve steeper.</span>
+            <span className="text-cyan-400 text-xs font-medium">The TPI filter cuts low-conviction entries. Fewer trades. Higher selectivity. The live system builds on this baseline.</span>
           </div>
         </div>
       </section>
@@ -402,7 +401,7 @@ export function LandingPage({
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">What You Get Between Signals</h2>
-            <p className="text-gray-400 text-sm">Signals are rare. Market insight isn't. Stay informed while you wait.</p>
+            <p className="text-gray-400 text-sm">Most months: no signal. That doesn't mean silence. Premium keeps you oriented while the system watches.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -494,13 +493,13 @@ export function LandingPage({
             <Users className="text-cyan-400" size={28} />
           </div>
           <h2 className="text-2xl font-bold text-white mb-3 tracking-tight relative">
-            Built for serious BTC investors
+            The system waits for the right moment. So should you.
           </h2>
           <p className="text-gray-400 mb-2 text-sm leading-relaxed relative max-w-md mx-auto">
-            Answer a few quick questions and we'll confirm this fits your trading mindset.
+            Answer 4 questions. We'll tell you exactly how this system fits your approach.
             Free plan available — no card required.
           </p>
-          <p className="text-gray-500 text-xs mb-8 relative">The free tier shows delayed signals so you can verify the system before committing.</p>
+          <p className="text-gray-500 text-xs mb-8 relative">Free plan: access the full 43-signal history so you can verify the track record before committing.</p>
           <button
             onClick={onGetStarted}
             className="bg-[#D4A017] text-black px-8 py-4 rounded-lg font-semibold text-base hover:bg-[#E6B325] transition-colors inline-flex items-center gap-2 shadow-lg shadow-black/30 relative"

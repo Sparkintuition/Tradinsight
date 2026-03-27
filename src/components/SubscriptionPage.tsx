@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, TrendingUp, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,10 +12,16 @@ interface Plan {
   signal_limit: number;
 }
 
-export function SubscriptionPage() {
+interface SubscriptionPageProps {
+  onGoHome: () => void;
+  onBackToProfile: () => void;
+}
+
+export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPageProps) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -130,10 +136,7 @@ export function SubscriptionPage() {
 
       window.location.href = data.url;
     } catch (error) {
-      console.error('Error subscribing:', error);
-      alert(
-        error instanceof Error ? error.message : 'Something went wrong'
-      );
+      setCheckoutError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -143,14 +146,39 @@ export function SubscriptionPage() {
   const isFreeSelected = selectedPlanData?.price === 0;
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0B0F19]">
+
+      {/* Header */}
+      <header className="border-b border-[#1F2937] bg-[#0F172A]/80 backdrop-blur sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <button
+            onClick={onGoHome}
+            className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm transition-colors"
+          >
+            <ArrowLeft size={15} />
+            Back
+          </button>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="text-cyan-400" size={22} />
+            <span className="text-white font-bold tracking-tight">Tradinsight</span>
+          </div>
+          <button
+            onClick={onBackToProfile}
+            className="text-gray-500 hover:text-gray-300 text-xs transition-colors"
+          >
+            Edit profile
+          </button>
+        </div>
+      </header>
+
+      <div className="flex items-center justify-center p-4 py-12">
       <div className="max-w-6xl w-full">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-white tracking-tight mb-4">
-            Stop Guessing. Trade BTC with Data-Driven Signals.
+            Your profile is set. Choose how you access the signals.
           </h2>
           <p className="text-gray-400 text-lg">
-            Review past BTC signals for free, then unlock real-time signals and analysis
+            Verify the full signal history for free. Upgrade when you've seen enough to decide.
           </p>
         </div>
 
@@ -171,7 +199,7 @@ export function SubscriptionPage() {
             ))}
           </div>
           <p className="text-center text-gray-600 text-xs mt-3">
-            Backtested on BTC/USD since 2018 · raw strategy signals · past performance does not guarantee future results
+            Raw strategy signals · backtested on BTC/USD since 2018 · past performance does not guarantee future results
           </p>
         </div>
 
@@ -193,7 +221,7 @@ export function SubscriptionPage() {
                 }`}
               >
                 <h3 className="text-2xl font-bold text-white tracking-tight mb-2">
-                  {isFreePlan ? 'Free (Proof Mode)' : 'Real-Time Signals'}
+                  {isFreePlan ? 'Free — Verify First' : 'Real-Time Signals'}
                 </h3>
 
                 <div className="mb-6">
@@ -215,14 +243,14 @@ export function SubscriptionPage() {
                   <ul className="space-y-3 mb-8">
                     {(isFreePlan
                       ? [
-                          'View delayed BTC signals',
-                          'See how previous trades played out',
+                          'Full signal history — 43 signals since 2018',
+                          'Entry prices, dates, and trade results',
                         ]
                       : [
-                          'Real-time BTC signals',
-                          'Analysis and market context',
-                          'Clear long & short signals',
-                          'Access to long/medium term TPI',
+                          'Real-time signals — no 1-week delay',
+                          'Full TPI breakdown with every signal',
+                          'Signal analysis: the reasoning behind every entry',
+                          'Live market conditions — Medium Term & Value',
                         ]
                     ).map((feature, i) => (
                       <li key={i} className="flex items-start gap-3 text-gray-300">
@@ -246,16 +274,23 @@ export function SubscriptionPage() {
                 >
                   {isSelected
                     ? isFreePlan
-                      ? 'Viewing Free Access'
+                      ? 'Start Free'
                       : 'Selected'
                     : isFreePlan
-                    ? 'View Past Signals'
+                    ? 'Verify the Track Record'
                     : 'Get Real-Time Signals'}
                 </div>
               </button>
             );
           })}
         </div>
+
+        {checkoutError && (
+          <div className="flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 mb-4 max-w-md mx-auto">
+            <AlertTriangle size={14} className="text-rose-400 shrink-0 mt-0.5" />
+            <p className="text-rose-300 text-xs">{checkoutError}</p>
+          </div>
+        )}
 
         <div className="text-center">
           <button
@@ -270,10 +305,11 @@ export function SubscriptionPage() {
             {loading
               ? 'Processing...'
               : isFreeSelected
-              ? 'Continue with Free Access'
+              ? 'Start Free — Verify the Track Record'
               : 'Unlock Real-Time Signals'}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
