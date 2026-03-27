@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.tpi-notification-webhook]
 verify_jwt = false
+
+[functions.run-migration]
+verify_jwt = false

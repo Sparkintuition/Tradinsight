@@ -532,11 +532,6 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   </div>
                 </div>
 
-                <p className="text-gray-600 text-xs mt-4 text-center">
-                  {activeSignal?.tpi_value_indicator
-                    ? 'Updated from TPI app'
-                    : 'Updated manually · Check back regularly'}
-                </p>
               </div>
             ) : (
               <div className="bg-[#121826] rounded-2xl p-5 border border-[#1F2937] h-full flex flex-col">
