@@ -1,0 +1,81 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 })
+  }
+
+  const SUPABASE_URL             = Deno.env.get('SUPABASE_URL')!
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const WEBHOOK_SECRET            = Deno.env.get('TRADINGVIEW_WEBHOOK_SECRET')
+
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return new Response('Invalid JSON', { status: 400 })
+  }
+
+  // Validate shared secret when configured
+  if (WEBHOOK_SECRET && body.secret !== WEBHOOK_SECRET) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
+  // Accept both TradingView native field names and custom ones
+  const rawDirection = String(body.direction ?? body.action ?? '')
+  const price        = Number(body.price ?? body.close ?? 0)
+  const date         = String(body.date  ?? new Date().toISOString().split('T')[0])
+  const analysis     = body.analysis ? String(body.analysis) : null
+
+  if (!rawDirection || !price) {
+    return new Response(JSON.stringify({ error: 'Missing direction or price' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Normalise direction to 'Long' / 'Short' to match what the Dashboard expects
+  const direction: 'Long' | 'Short' =
+    rawDirection.toLowerCase().startsWith('long') || rawDirection.toLowerCase() === 'buy'
+      ? 'Long'
+      : 'Short'
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+  const { data, error } = await supabase
+    .from('crypto_signals')
+    .insert({
+      coin:         'BTC',
+      signal_type:  direction,
+      signal_price: price,
+      status:       'active',
+      analysis,
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Fire email notification — non-blocking; failure doesn't affect the webhook response
+  fetch(`${SUPABASE_URL}/functions/v1/send-signal-email`, {
+    method: 'POST',
+    headers: {
+      Authorization:  `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      type:   'signal',
+      signal: { direction, price, date },
+    }),
+  }).catch(() => { /* non-critical */ })
+
+  return new Response(JSON.stringify({ ok: true, id: data.id }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
+})

@@ -6,7 +6,10 @@
       "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/data\")",
       "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/navigation\")",
       "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/screens\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(supabase functions:*)",
+      "Bash(where supabase:*)",
+      "Bash(npx supabase:*)"
     ]
   }
 }
