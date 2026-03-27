@@ -278,7 +278,7 @@ const FAQ_ITEMS: FAQItem[] = [
           All trading and investment decisions are made entirely by you. Past performance of the strategy does not guarantee future results. Cryptocurrency markets are highly volatile and you can lose money.
         </p>
         <p>
-          Use Tradinsight as one input in your decision-making process — never as a replacement for your own judgment and risk management.
+          Use Tradinsight as one input in your decision-making process — never as a full replacement for your own judgment and risk management.
         </p>
       </>
     ),

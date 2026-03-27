@@ -130,7 +130,7 @@ const SECTIONS: Section[] = [
           ))}
         </div>
         <p>
-          To request a refund, contact us at <strong className="text-white">support@tradinsight.com</strong> within the eligible window. Refunds are processed within 5–10 business days and returned to your original payment method.
+          To request a refund, contact us at <strong className="text-white">support@tradinsight.net</strong> within the eligible window. Refunds are processed within 5–10 business days and returned to your original payment method.
         </p>
         <p>
           This refund policy does not affect any statutory rights you may have under applicable UK consumer protection law.
@@ -203,7 +203,7 @@ const SECTIONS: Section[] = [
         </p>
         <p className="font-medium text-white text-sm mt-3 mb-2">Your rights</p>
         <p>
-          Under UK GDPR, you have the right to access, rectify, or delete your personal data. To exercise these rights, contact us at <strong className="text-white">support@tradinsight.com</strong>. We will respond within 30 days.
+          Under UK GDPR, you have the right to access, rectify, or delete your personal data. To exercise these rights, contact us at <strong className="text-white">support@tradinsight.net</strong>. We will respond within 30 days.
         </p>
         <p>
           You may request account deletion at any time. Upon deletion, your personal data will be permanently removed within 30 days, except where retention is required by law.
@@ -224,7 +224,7 @@ const SECTIONS: Section[] = [
           If any provision of these Terms is found to be unenforceable, the remaining provisions will continue in full force and effect.
         </p>
         <p>
-          For any questions regarding these Terms, contact us at <strong className="text-white">support@tradinsight.com</strong>.
+          For any questions regarding these Terms, contact us at <strong className="text-white">support@tradinsight.net</strong>.
         </p>
       </>
     ),
@@ -322,7 +322,7 @@ export function TermsPage({ onBack }: TermsPageProps) {
             SPARKIN LTD · Registered in England and Wales · Last updated {LAST_UPDATED}
           </p>
           <p className="text-gray-700 text-xs mt-1">
-            Questions? Contact us at support@tradinsight.com
+            Questions? Contact us at support@tradinsight.net
           </p>
         </div>
 

@@ -243,7 +243,7 @@ export function AccountPage({ onNavigateDashboard, onUnlockPremium, onMethodolog
               <div className="rounded-xl border border-[#1F2937] bg-[#0F172A]/40 px-4 py-3">
                 <p className="text-gray-500 text-xs leading-relaxed">
                   To cancel your subscription or update billing details, contact us at{' '}
-                  <span className="text-gray-300">support@tradinsight.com</span>.
+                  <span className="text-gray-300">support@tradinsight.net</span>.
                   Cancellations take effect at the end of the current billing period.
                 </p>
               </div>

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/contexts\")",
+      "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/constants\")",
+      "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/data\")",
+      "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/navigation\")",
+      "Bash(mkdir -p \"c:/Users/Yassine/OneDrive/Desktop/Tradinsight/tradinsight-mobile/src/screens\")",
+      "Bash(npm install:*)"
+    ]
+  }
+}
