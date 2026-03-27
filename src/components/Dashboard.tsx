@@ -18,6 +18,7 @@ interface Signal {
   tpi_value_indicator?: string;   // Positive | Neutral | Negative — set by TPI app
   tpi_medium_term?: string;       // Positive | Neutral | Negative — set by TPI app
   market_analysis?: string;
+  market_analysis_updated_at?: string;
 }
 
 interface UserProfile {
@@ -649,9 +650,11 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                 }`}>
                   {activeSignal?.market_analysis || 'Analysis will appear here when updated.'}
                 </p>
-                <p className="text-gray-600 text-xs mt-4">
-                  Last updated: {formatDate(activeSignal!.created_at)}
-                </p>
+                {activeSignal?.market_analysis_updated_at && (
+                  <p className="text-gray-600 text-xs mt-4">
+                    Last updated: {formatDate(activeSignal.market_analysis_updated_at)}
+                  </p>
+                )}
               </>
             ) : (
               <div className="relative">

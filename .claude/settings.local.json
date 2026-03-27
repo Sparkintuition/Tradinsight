@@ -14,7 +14,11 @@
       "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase db push --include-all)",
       "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase migration repair --status applied 20260322135652)",
       "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase migration repair --status applied 20260327000000)",
-      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase db push)"
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase db push)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase migration list)",
+      "Bash(curl -s -X POST \"https://api.supabase.com/v1/projects/yqozzlqmiayvsdfnaylg/database/query\" -H \"Authorization: Bearer sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d\" -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"ALTER TABLE crypto_signals ADD COLUMN IF NOT EXISTS market_analysis_updated_at timestamptz;\"\"}')",
+      "Bash(curl -s -X POST \"https://yqozzlqmiayvsdfnaylg.supabase.co/rest/v1/rpc/exec_sql\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlxb3psbHFtaWF5dnNkZm5heWxnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MjkxMjA2MCwiZXhwIjoyMDU4NDg4MDYwfQ.placeholder\" -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"ALTER TABLE crypto_signals ADD COLUMN IF NOT EXISTS market_analysis_updated_at timestamptz;\"\"}')",
+      "Bash(npx tsc:*)"
     ]
   }
 }
