@@ -50,7 +50,17 @@ function buildSignalEmail(direction: string, price: number, date: string): strin
         <p style="margin:0 0 6px;font-size:38px;font-weight:700;color:#ffffff;letter-spacing:-1px;font-variant-numeric:tabular-nums;">$${formattedPrice}</p>
         <p style="margin:0 0 24px;font-size:13px;color:#71717A;">${date}</p>
 
-        <div style="border-top:1px solid #1F2937;margin-bottom:20px;"></div>
+        <div style="text-align:center;margin:28px 0 8px;">
+          <a href="https://tradinsight-iota.vercel.app"
+             style="background:#6366f1;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block;letter-spacing:-0.1px;">
+            View Signal →
+          </a>
+        </div>
+        <p style="text-align:center;margin:8px 0 0;font-size:11px;color:#52525b;">
+          Or visit: <a href="https://tradinsight-iota.vercel.app" style="color:#6366f1;">tradinsight-iota.vercel.app</a>
+        </p>
+
+        <div style="border-top:1px solid #1F2937;margin:24px 0 20px;"></div>
 
         <p style="margin:0;font-size:13px;color:#A1A1AA;line-height:1.6;">Open the app to see full analysis and TPI context.</p>
 
@@ -119,6 +129,16 @@ function buildTpiEmail(va_state: string, tpi_state: string): string {
             </tr>
           </table>
         </div>
+
+        <div style="text-align:center;margin:28px 0 8px;">
+          <a href="https://tradinsight-iota.vercel.app"
+             style="background:#6366f1;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block;letter-spacing:-0.1px;">
+            View Market Conditions →
+          </a>
+        </div>
+        <p style="text-align:center;margin:8px 0 0;font-size:11px;color:#52525b;">
+          Or visit: <a href="https://tradinsight-iota.vercel.app" style="color:#6366f1;">tradinsight-iota.vercel.app</a>
+        </p>
 
         <div style="border-top:1px solid #1F2937;margin-bottom:20px;"></div>
 

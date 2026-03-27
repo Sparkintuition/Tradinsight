@@ -9,7 +9,12 @@
       "Bash(npm install:*)",
       "Bash(supabase functions:*)",
       "Bash(where supabase:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(npx vercel:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase db push --include-all)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase migration repair --status applied 20260322135652)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase migration repair --status applied 20260327000000)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_77213e7402d2ca95b3fdd6090b6b74d8e270b94d npx supabase db push)"
     ]
   }
 }

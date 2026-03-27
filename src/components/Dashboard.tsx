@@ -17,6 +17,7 @@ interface Signal {
   created_at: string;
   tpi_value_indicator?: string;   // Positive | Neutral | Negative — set by TPI app
   tpi_medium_term?: string;       // Positive | Neutral | Negative — set by TPI app
+  market_analysis?: string;
 }
 
 interface UserProfile {
@@ -630,6 +631,46 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
               : 'No active signal — monitoring market conditions'}
           </p>
         </div>
+
+        {/* Signal Analysis */}
+        {visibleSignal && (
+          <div className="bg-[#121826] rounded-2xl p-6 border border-[#1F2937]">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-white font-semibold">Signal Analysis</h2>
+              <span className="text-[10px] font-bold text-[#D4A017] bg-[#D4A017]/10 border border-[#D4A017]/25 rounded-full px-2.5 py-0.5 uppercase tracking-wide">
+                Premium
+              </span>
+            </div>
+
+            {isPremium ? (
+              <>
+                <p className={`text-gray-300 text-sm leading-relaxed whitespace-pre-wrap ${
+                  !activeSignal?.market_analysis ? 'italic text-gray-500' : ''
+                }`}>
+                  {activeSignal?.market_analysis || 'Analysis will appear here when updated.'}
+                </p>
+                <p className="text-gray-600 text-xs mt-4">
+                  Last updated: {formatDate(activeSignal!.created_at)}
+                </p>
+              </>
+            ) : (
+              <div className="relative">
+                <p className="blur-sm select-none pointer-events-none text-gray-300 text-sm leading-relaxed">
+                  Premium analysis covering market structure, key levels, and signal context. Updated with each signal.
+                </p>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={onUnlockPremium}
+                    className="flex items-center gap-2 bg-[#D4A017] hover:bg-[#C69214] text-black text-xs font-bold px-4 py-2 rounded-full transition-colors"
+                  >
+                    <Lock size={11} />
+                    Unlock full analysis — Upgrade to Premium
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Signal History Table */}
         <div className="bg-[#121826] rounded-2xl border border-[#1F2937] overflow-hidden">
