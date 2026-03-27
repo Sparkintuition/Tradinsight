@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   TrendingUp, LogOut, ArrowUpRight, ArrowDownRight, Minus,
   Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User,
@@ -27,6 +27,18 @@ interface UserProfile {
 
 interface Subscription {
   subscription_plans: { name: string };
+}
+
+// Typed shape produced by computeEarnings() after reversal
+interface HistoryEntry {
+  date: string;
+  type: string;
+  price: number;
+  tpiMedium: string;
+  tpiLong: string;
+  isoDate: string;
+  pnlPct: number | null;
+  balance: number;
 }
 
 interface DashboardProps {
@@ -166,6 +178,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [historyTab, setHistoryTab] = useState<'strategy' | 'tpi'>('strategy');
   const [btcPrice, setBtcPrice] = useState<number | null>(null);
@@ -190,8 +203,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
         .order('created_at', { ascending: false }).limit(1);
       if (signalsError) throw signalsError;
       setSignals(signalsData || []);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+    } catch {
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -228,7 +241,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   }, [user, profile?.is_premium]);
 
   const isPremium = !!profile?.is_premium;
-  const DELAY_MS = 7 * 24 * 60 * 60 * 1000; // 1 week delay for free users
+  const DELAY_MS = 7 * 24 * 60 * 60 * 1000;
   const activeSignal = signals[0] || null;
   const visibleSignal = isPremium
     ? activeSignal
@@ -256,14 +269,13 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   };
 
   // Merge latest Supabase signal into history if it's newer than hardcoded array
-  const DELAY_MS_CONST = 7 * 24 * 60 * 60 * 1000;
   const buildHistory = (baseHistory: typeof SIGNAL_HISTORY) => {
     if (!activeSignal) return baseHistory;
     const latestHardcoded = baseHistory[0]; // newest in reversed array
     const signalIsoDate = activeSignal.created_at.split('T')[0];
     const signalDate = new Date(activeSignal.created_at).getTime();
     const isVisible = isPremium ||
-      new Date().getTime() - signalDate >= DELAY_MS_CONST;
+      new Date().getTime() - signalDate >= DELAY_MS;
     if (!isVisible) return baseHistory; // hide entirely for free users if < 1 week
 
     const liveEntry = {
@@ -272,8 +284,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
       }).replace(/ /g, '-'),
       type: activeSignal.signal_type?.toLowerCase() === 'long' ? 'Long' : 'Short',
       price: activeSignal.signal_price,
-      tpiMedium: 'Positive',
-      tpiLong: 'Neutral',
+      tpiMedium: activeSignal.tpi_medium_term || 'Neutral',
+      tpiLong: activeSignal.tpi_value_indicator || 'Neutral',
       isoDate: signalIsoDate,
       pnlPct: null as null,
       balance: 1000,
@@ -293,8 +305,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     return [liveEntry, ...baseHistory];
   };
 
-  const rawHistory  = buildHistory(SIGNAL_HISTORY);
-  const tpiHistory  = buildHistory(TPI_HISTORY);
+  const rawHistory = useMemo(() => buildHistory(SIGNAL_HISTORY), [activeSignal, isPremium]);
+  const tpiHistory = useMemo(() => buildHistory(TPI_HISTORY), [activeSignal, isPremium]);
   const activeHistory = historyTab === 'strategy' ? rawHistory : tpiHistory;
   const displayHistory = showFullHistory ? activeHistory : activeHistory.slice(0, 8);
 
@@ -302,6 +314,20 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     return (
       <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
         <div className="text-cyan-400 text-xl font-medium">Loading Tradinsight...</div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white font-semibold mb-2">Something went wrong</p>
+          <p className="text-gray-500 text-sm mb-4">Could not load your dashboard. Please refresh the page.</p>
+          <button onClick={fetchDashboardData} className="text-cyan-400 hover:text-cyan-300 text-sm transition-colors">
+            Try again
+          </button>
+        </div>
       </div>
     );
   }
@@ -677,50 +703,37 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1F2937]/50">
-                {displayHistory.map((signal: any, i: number) => {
-                  // No blur — new signals are hidden entirely for free users
-                  // (handled in buildHistory — they never appear in displayHistory)
-                  const isLatestBlurred = false;
+                {displayHistory.map((signal: HistoryEntry, i: number) => {
                   return (
                     <tr key={i} className={`transition-colors hover:bg-[#0F172A]/50 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}>
-                      <td className={`px-6 py-3.5 text-gray-300 text-xs font-mono ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
-                        {isLatestBlurred ? 'XX-XXX-XX' : signal.date}
+                      <td className="px-6 py-3.5 text-gray-300 text-xs font-mono">
+                        {signal.date}
                         {i === 0 && <span className="ml-2 text-[10px] text-cyan-400 font-sans font-medium">Latest</span>}
                       </td>
                       <td className="px-4 py-3.5">
-                        {isLatestBlurred ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#1F2937] text-gray-600 border border-[#1F2937]">
-                            <Lock size={10} /> Locked
-                          </span>
-                        ) : (
-                          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                            signal.type === 'Long'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                          }`}>
-                            {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
-                            {signal.type}
-                          </span>
-                        )}
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                          signal.type === 'Long'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        }`}>
+                          {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                          {signal.type}
+                        </span>
                       </td>
-                      <td className={`px-4 py-3.5 text-right text-gray-200 text-xs font-mono font-medium ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
+                      <td className="px-4 py-3.5 text-right text-gray-200 text-xs font-mono font-medium">
                         ${signal.price.toLocaleString()}
                       </td>
                       {historyTab === 'tpi' && (
                         <td className="px-4 py-3.5 text-center">
-                          {isLatestBlurred
-                            ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
-                            : <TpiPill value={signal.tpiMedium} />}
+                          <TpiPill value={signal.tpiMedium} />
                         </td>
                       )}
                       {historyTab === 'tpi' && (
                         <td className="px-4 py-3.5 text-center">
-                          {isLatestBlurred
-                            ? <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-[#1F2937] border border-[#1F2937] rounded-full px-2 py-0.5"><Lock size={9} />—</span>
-                            : <TpiPill value={signal.tpiLong} />}
+                          <TpiPill value={signal.tpiLong} />
                         </td>
                       )}
-                      <td className={`px-6 py-3.5 text-right ${isLatestBlurred ? 'blur-sm select-none' : ''}`}>
+                      <td className="px-6 py-3.5 text-right">
                         {i === 0 && btcPrice && signal.price ? (() => {
                           // Live P&L: % change from entry price to current BTC price
                           const livePnlPct = signal.type === 'Long'
@@ -768,47 +781,38 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
 
           {/* Mobile cards */}
           <div className="md:hidden divide-y divide-[#1F2937]/50">
-            {displayHistory.map((signal: any, i: number) => {
-              // No blur — new signals hidden entirely for free users
-              const isLatestBlurred = false;
+            {displayHistory.map((signal: HistoryEntry, i: number) => {
               return (
                 <div key={i} className={`px-4 py-4 ${i === 0 ? 'bg-[#0F172A]/30' : ''}`}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-mono text-gray-300 ${isLatestBlurred ? 'blur-sm' : ''}`}>
-                        {isLatestBlurred ? 'XX-XXX-XX' : signal.date}
+                      <span className="text-xs font-mono text-gray-300">
+                        {signal.date}
                       </span>
                       {i === 0 && <span className="text-[10px] text-cyan-400 font-medium">Latest</span>}
                     </div>
-                    {isLatestBlurred ? (
-                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-[#1F2937] text-gray-600 border border-[#1F2937]">
-                        <Lock size={10} /> Locked
-                      </span>
-                    ) : (
-                      <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        signal.type === 'Long'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                      }`}>
-                        {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
-                        {signal.type}
-                      </span>
-                    )}
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                      signal.type === 'Long'
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                    }`}>
+                      {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                      {signal.type}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className={`text-gray-300 text-xs font-mono ${isLatestBlurred ? 'blur-sm' : ''}`}>
-                        ${isLatestBlurred ? '——' : signal.price.toLocaleString()}
+                      <span className="text-gray-300 text-xs font-mono">
+                        ${signal.price.toLocaleString()}
                       </span>
-                      {!isLatestBlurred && historyTab === 'tpi' && (
+                      {historyTab === 'tpi' && (
                         <div className="flex items-center gap-1.5 mt-1.5">
                           <TpiPill value={signal.tpiMedium} />
                           <TpiPill value={signal.tpiLong} />
                         </div>
                       )}
                     </div>
-                    {!isLatestBlurred && (
-                      i === 0 && btcPrice && signal.price ? (() => {
+                    {(i === 0 && btcPrice && signal.price ? (() => {
                         const livePnlPct = signal.type === 'Long'
                           ? (btcPrice - signal.price) / signal.price * 100
                           : (signal.price - btcPrice) / signal.price * 100;

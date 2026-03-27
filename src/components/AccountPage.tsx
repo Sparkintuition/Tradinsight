@@ -31,6 +31,7 @@ export function AccountPage({ onNavigateDashboard, onUnlockPremium, onMethodolog
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -60,8 +61,8 @@ export function AccountPage({ onNavigateDashboard, onUnlockPremium, onMethodolog
           (b.subscription_plans?.price || 0) - (a.subscription_plans?.price || 0)
         );
         setSubscription((sorted[0] as Subscription) || null);
-      } catch (err) {
-        console.error('Error fetching account data:', err);
+      } catch {
+        setFetchError(true);
       } finally {
         setLoading(false);
       }
@@ -118,6 +119,17 @@ export function AccountPage({ onNavigateDashboard, onUnlockPremium, onMethodolog
     return (
       <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
         <div className="text-cyan-400 text-xl font-medium">Loading...</div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+        <div className="flex items-center gap-2 text-rose-400 text-sm">
+          <AlertTriangle size={16} />
+          Failed to load account data. Please refresh the page.
+        </div>
       </div>
     );
   }

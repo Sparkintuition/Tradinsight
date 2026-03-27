@@ -132,8 +132,8 @@ function AppRoutes() {
           return;
         }
 
-      } catch (error) {
-        console.error('Error checking user flow:', error);
+      } catch {
+        // Flow resolution failed — leave user on current page
       } finally {
         setCheckingFlow(false);
       }

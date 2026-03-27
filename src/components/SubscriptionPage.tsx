@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, TrendingUp, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Check, Minus, TrendingUp, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +22,7 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
+  const [plansError, setPlansError] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -40,7 +41,6 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
         .maybeSingle();
 
       if (error) {
-        console.error('Error checking premium status:', error);
         return;
       }
 
@@ -59,7 +59,7 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
       .order('price', { ascending: true });
 
     if (error) {
-      console.error('Error fetching plans:', error);
+      setPlansError(true);
       return;
     }
 
@@ -125,12 +125,10 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
       );
 
       if (error) {
-        console.error('Stripe function error:', error);
         throw new Error(error.message || 'Checkout function failed');
       }
 
       if (!data?.url) {
-        console.error('Returned checkout data:', data);
         throw new Error(data?.error || 'No checkout URL returned');
       }
 
@@ -186,10 +184,10 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
         <div className="max-w-4xl mx-auto mb-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { value: '4.54', label: 'Profit Factor', sub: 'wins vs losses' },
-              { value: '62.8%', label: 'Win Rate', sub: 'since 2018' },
+              { value: '4.59', label: 'Profit Factor', sub: 'wins vs losses' },
+              { value: '65.1%', label: 'Win Rate', sub: 'since 2018' },
               { value: '43', label: 'Signals', sub: 'backtested' },
-              { value: '3.16', label: 'Sortino Ratio', sub: 'risk-adjusted' },
+              { value: '3.31', label: 'Sortino Ratio', sub: 'risk-adjusted' },
             ].map((stat) => (
               <div key={stat.label} className="bg-[#121826] border border-[#1F2937] rounded-xl p-4 text-center">
                 <p className="text-xl font-bold text-white">{stat.value}</p>
@@ -202,6 +200,13 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
             Raw strategy signals · backtested on BTC/USD since 2018 · past performance does not guarantee future results
           </p>
         </div>
+
+        {plansError && (
+          <div className="flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 mb-6 max-w-md mx-auto">
+            <AlertTriangle size={14} className="text-rose-400 shrink-0 mt-0.5" />
+            <p className="text-rose-300 text-xs">Failed to load plans. Please refresh the page.</p>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
           {plans.map((plan) => {
@@ -220,7 +225,7 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
                     : 'border-[#1F2937] hover:border-cyan-400/40'
                 }`}
               >
-                <h3 className="text-2xl font-bold text-white tracking-tight mb-2">
+                <h3 className={`text-2xl font-bold tracking-tight mb-2 ${isFreePlan ? 'text-cyan-400' : 'text-[#D4A017]'}`}>
                   {isFreePlan ? 'Free — Verify First' : 'Real-Time Signals'}
                 </h3>
 
@@ -245,6 +250,7 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
                       ? [
                           'Full signal history — 43 signals since 2018',
                           'Entry prices, dates, and trade results',
+                          'Latest signal delayed 1 week',
                         ]
                       : [
                           'Real-time signals — no 1-week delay',
@@ -252,12 +258,17 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
                           'Signal analysis: the reasoning behind every entry',
                           'Live market conditions — Medium Term & Value',
                         ]
-                    ).map((feature, i) => (
-                      <li key={i} className="flex items-start gap-3 text-gray-300">
-                        <Check className="text-cyan-400 flex-shrink-0 mt-0.5" size={20} />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
+                    ).map((feature, i) => {
+                      const isLimit = isFreePlan && feature.includes('delayed');
+                      return (
+                        <li key={i} className={`flex items-start gap-3 ${isLimit ? 'text-gray-500' : 'text-gray-300'}`}>
+                          {isLimit
+                            ? <Minus className="text-gray-600 flex-shrink-0 mt-0.5" size={20} />
+                            : <Check className="text-cyan-400 flex-shrink-0 mt-0.5" size={20} />}
+                          <span>{feature}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
 

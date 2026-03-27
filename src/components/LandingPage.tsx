@@ -353,12 +353,12 @@ export function LandingPage({
               <p className="text-gray-400 text-xs mt-2 leading-snug">Raw signals<br/>since 2018</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">62.8%</p>
+              <p className="text-3xl font-bold text-white">65.1%</p>
               <p className="text-gray-400 text-xs mt-2 leading-snug">Win rate —<br/>unfiltered baseline</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
-              <p className="text-3xl font-bold text-white">4.54</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 354%</p>
+              <p className="text-3xl font-bold text-white">4.59</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 359%</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
               <p className="text-3xl font-bold text-white">5–6</p>

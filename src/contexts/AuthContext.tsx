@@ -38,12 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!mounted) return;
 
-      if (error) {
-        console.error('Error getting session:', error);
-      }
-
-      setSession(session ?? null);
-      setUser(session?.user ?? null);
+      const resolvedSession = error ? null : (session ?? null);
+      setSession(resolvedSession);
+      setUser(resolvedSession?.user ?? null);
       setLoading(false);
     };
 
