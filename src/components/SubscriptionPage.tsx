@@ -197,7 +197,7 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
             ))}
           </div>
           <p className="text-center text-gray-600 text-xs mt-3">
-            Raw strategy signals · backtested on BTC/USD since 2018 · past performance does not guarantee future results
+            Raw strategy signals · backtested on BTC/USD since 2018 · metrics as of March 2026 · past performance does not guarantee future results
           </p>
         </div>
 

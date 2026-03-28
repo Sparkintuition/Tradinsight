@@ -367,7 +367,7 @@ export function LandingPage({
           </div>
 
           <p className="text-center text-gray-500 text-xs mt-5">
-            Backtested results. Past performance does not guarantee future results. Live signal tracking in progress.
+            Backtested results · metrics as of March 2026 · past performance does not guarantee future results.
           </p>
         </div>
       </section>
