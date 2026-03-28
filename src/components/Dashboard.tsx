@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   TrendingUp, LogOut, ArrowUpRight, ArrowDownRight, Minus,
-  Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User,
+  Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User, ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -497,7 +498,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                 <div className="space-y-4 flex-1">
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-white text-xs font-semibold">TPI — Medium Term</span>
+                      <Link to="/methodology#tpi" className="text-white text-xs font-semibold hover:underline flex items-center gap-1">TPI — Medium Term <ExternalLink size={10} className="text-gray-500" /></Link>
                       <TpiPill value={activeSignal?.tpi_medium_term || 'Neutral'} />
                     </div>
                     <p className="text-gray-500 text-xs leading-relaxed mb-3">
@@ -512,7 +513,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
 
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-white text-xs font-semibold">Value Indicator — Long Term</span>
+                      <Link to="/methodology#tpi" className="text-white text-xs font-semibold hover:underline flex items-center gap-1">Value Indicator — Long Term <ExternalLink size={10} className="text-gray-500" /></Link>
                       <TpiPill value={activeSignal?.tpi_value_indicator || 'Neutral'} />
                     </div>
                     <p className="text-gray-500 text-xs leading-relaxed mb-3">
@@ -560,7 +561,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                 <div className="space-y-4 flex-1">
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-white text-xs font-semibold">TPI — Medium Term</span>
+                      <Link to="/methodology#tpi" className="text-white text-xs font-semibold hover:underline flex items-center gap-1">TPI — Medium Term <ExternalLink size={10} className="text-gray-500" /></Link>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ color: '#d4a017', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.25)' }}>Locked</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -572,7 +573,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
 
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-white text-xs font-semibold">Value Indicator — Long Term</span>
+                      <Link to="/methodology#tpi" className="text-white text-xs font-semibold hover:underline flex items-center gap-1">Value Indicator — Long Term <ExternalLink size={10} className="text-gray-500" /></Link>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ color: '#d4a017', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.25)' }}>Locked</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">

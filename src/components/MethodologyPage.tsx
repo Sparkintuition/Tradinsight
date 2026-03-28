@@ -342,7 +342,7 @@ export function MethodologyPage({ onNavigateDashboard, onUnlockPremium }: Method
         </div>
 
         {/* Category filter */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div id="tpi" className="flex flex-wrap gap-2 mb-8">
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
