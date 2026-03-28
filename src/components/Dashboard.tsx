@@ -52,48 +52,59 @@ interface DashboardProps {
 // Raw signals oldest→newest for earnings simulation
 // Updated: APCRAF Strategy final params — PF 4.54, WR 62.79%, 43 trades
 const RAW_SIGNALS = [
-  { date: '26-Oct-19',  type: 'Long',  price: 9230,   tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2019-10-26' },
-  { date: '26-Feb-20',  type: 'Short', price: 8785,   tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2020-02-26' },
-  { date: '8-Apr-20',   type: 'Long',  price: 7361,   tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-04-08' },
-  { date: '25-Jun-20',  type: 'Short', price: 9249,   tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2020-06-25' },
-  { date: '22-Jul-20',  type: 'Long',  price: 9518,   tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-07-22' },
-  { date: '3-Sep-20',   type: 'Short', price: 10141,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2020-09-03' },
-  { date: '9-Oct-20',   type: 'Long',  price: 11051,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-10-09' },
-  { date: '30-Nov-20',  type: 'Long',  price: 19696,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-11-30' },
-  { date: '22-Apr-21',  type: 'Short', price: 51691,  tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2021-04-22' },
-  { date: '25-Jul-21',  type: 'Long',  price: 35381,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2021-07-25' },
-  { date: '10-Sep-21',  type: 'Short', price: 44851,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2021-09-10' },
-  { date: '5-Oct-21',   type: 'Long',  price: 51472,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2021-10-05' },
-  { date: '17-Nov-21',  type: 'Short', price: 60345,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2021-11-17' },
-  { date: '8-Feb-22',   type: 'Long',  price: 44043,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2022-02-08' },
-  { date: '22-Apr-22',  type: 'Short', price: 39709,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-04-22' },
-  { date: '18-Jul-22',  type: 'Long',  price: 22433,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-07-18' },
-  { date: '19-Aug-22',  type: 'Short', price: 20834,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2022-08-19' },
-  { date: '25-Oct-22',  type: 'Long',  price: 20080,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-10-25' },
-  { date: '8-Nov-22',   type: 'Short', price: 18547,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-11-08' },
-  { date: '10-Jan-23',  type: 'Long',  price: 17441,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-01-10' },
-  { date: '8-May-23',   type: 'Short', price: 27669,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2023-05-08' },
-  { date: '20-Jun-23',  type: 'Long',  price: 28308,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-06-20' },
-  { date: '3-Aug-23',   type: 'Short', price: 29194,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2023-08-03' },
-  { date: '16-Sep-23',  type: 'Long',  price: 26560,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-09-16' },
-  { date: '9-Nov-23',   type: 'Long',  price: 36701,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-11-09' },
-  { date: '8-Feb-24',   type: 'Long',  price: 45289,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-02-08' },
-  { date: '13-Apr-24',  type: 'Short', price: 63925,  tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2024-04-13' },
-  { date: '16-May-24',  type: 'Long',  price: 65235,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-05-16' },
-  { date: '14-Jun-24',  type: 'Short', price: 66044,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2024-06-14' },
-  { date: '19-Sep-24',  type: 'Long',  price: 62948,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-09-19' },
-  { date: '7-Dec-24',   type: 'Long',  price: 99832,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-12-07' },
-  { date: '23-Dec-24',  type: 'Short', price: 94881,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2024-12-23' },
-  { date: '18-Feb-25',  type: 'Short', price: 95672,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-02-18' },
-  { date: '8-May-25',   type: 'Long',  price: 103262, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2025-05-08' },
-  { date: '9-Jun-25',   type: 'Long',  price: 110263, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-06-09' },
-  { date: '19-Aug-25',  type: 'Short', price: 112873, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2025-08-19' },
-  { date: '11-Oct-25',  type: 'Short', price: 110644, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-10-11' },
-  { date: '4-Nov-25',   type: 'Short', price: 101497, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-11-04' },
-  { date: '18-Dec-25',  type: 'Short', price: 85516,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-12-18' },
-  { date: '4-Jan-26',   type: 'Long',  price: 91530,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-01-04' },
-  { date: '29-Jan-26',  type: 'Short', price: 84650,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-29' },
-  { date: '4-Mar-26',   type: 'Long',  price: 65400,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-04' },
+  // Trades 1–5 (Jan 2018 – Sep 2019) — from TradingView CSV backtest
+  { date: '12-Jan-18',  type: 'Short', price: 13340.70, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2018-01-12' },
+  { date: '17-Jul-18',  type: 'Long',  price: 6726.42,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2018-07-17' },
+  { date: '9-Aug-18',   type: 'Short', price: 6281.49,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2018-08-09' },
+  { date: '19-Feb-19',  type: 'Long',  price: 3868.78,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2019-02-19' },
+  { date: '24-Sep-19',  type: 'Short', price: 9690.72,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2019-09-24' },
+  // Trades 6–14 (Oct 2019 – Oct 2020)
+  { date: '26-Oct-19',  type: 'Long',  price: 8674.51,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2019-10-26' },
+  { date: '21-Nov-19',  type: 'Short', price: 8082.64,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2019-11-21' },
+  { date: '7-Jan-20',   type: 'Long',  price: 7765.27,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2020-01-07' },
+  { date: '27-Feb-20',  type: 'Short', price: 8779.99,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2020-02-27' },
+  { date: '24-Apr-20',  type: 'Long',  price: 7511.39,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-04-24' },
+  { date: '27-Jun-20',  type: 'Short', price: 9156.19,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2020-06-27' },
+  { date: '22-Jul-20',  type: 'Long',  price: 9395.26,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-07-22' },
+  { date: '4-Sep-20',   type: 'Short', price: 10171.53, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2020-09-04' },
+  { date: '9-Oct-20',   type: 'Long',  price: 10930.76, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-10-09' },
+  // Trades 15–21 (Apr 2021 – Apr 2022)
+  { date: '22-Apr-21',  type: 'Short', price: 53811.65, tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2021-04-22' },
+  { date: '26-Jul-21',  type: 'Long',  price: 35430.07, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2021-07-26' },
+  { date: '11-Sep-21',  type: 'Short', price: 44852.77, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2021-09-11' },
+  { date: '6-Oct-21',   type: 'Long',  price: 51501.88, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2021-10-06' },
+  { date: '17-Nov-21',  type: 'Short', price: 60114.93, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2021-11-17' },
+  { date: '8-Feb-22',   type: 'Long',  price: 43879.08, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2022-02-08' },
+  { date: '12-Apr-22',  type: 'Short', price: 39536.78, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-04-12' },
+  // Trades 22–28 (Oct 2022 – Sep 2023)
+  { date: '26-Oct-22',  type: 'Long',  price: 20089.42, tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-10-26' },
+  { date: '9-Nov-22',   type: 'Short', price: 18544.74, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-11-09' },
+  { date: '11-Jan-23',  type: 'Long',  price: 17442.91, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-01-11' },
+  { date: '22-Apr-23',  type: 'Short', price: 27263.68, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2023-04-22' },
+  { date: '21-Jun-23',  type: 'Long',  price: 28317.81, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-06-21' },
+  { date: '23-Jul-23',  type: 'Short', price: 29792.82, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2023-07-23' },
+  { date: '19-Sep-23',  type: 'Long',  price: 26769.09, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-09-19' },
+  // Trades 29–34 (Jan 2024 – Sep 2024)
+  { date: '15-Jan-24',  type: 'Short', price: 41709.55, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2024-01-15' },
+  { date: '9-Feb-24',   type: 'Long',  price: 45303.37, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-02-09' },
+  { date: '14-Apr-24',  type: 'Short', price: 64015.98, tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2024-04-14' },
+  { date: '16-May-24',  type: 'Long',  price: 66272.21, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-05-16' },
+  { date: '15-Jun-24',  type: 'Short', price: 66007.60, tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2024-06-15' },
+  { date: '19-Sep-24',  type: 'Long',  price: 61791.53, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-09-19' },
+  // Trades 35–41 (Dec 2024 – Oct 2025)
+  { date: '24-Dec-24',  type: 'Short', price: 94784.06, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2024-12-24' },
+  { date: '22-Apr-25',  type: 'Long',  price: 87498.07, tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2025-04-22' },
+  { date: '21-Jun-25',  type: 'Short', price: 103329.19,tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2025-06-21' },
+  { date: '30-Jun-25',  type: 'Long',  price: 108385.70,tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-06-30' },
+  { date: '20-Aug-25',  type: 'Short', price: 112896.01,tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2025-08-20' },
+  { date: '2-Oct-25',   type: 'Long',  price: 118666.69,tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-10-02' },
+  { date: '12-Oct-25',  type: 'Short', price: 110825.77,tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-10-12' },
+  // Trades 42–44 (Jan 2026 – Mar 2026)
+  { date: '5-Jan-26',   type: 'Long',  price: 91489.27, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-01-05' },
+  { date: '26-Jan-26',  type: 'Short', price: 86587.80, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-26' },
+  { date: '5-Mar-26',   type: 'Long',  price: 72689.78, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-05' },
+  // Trade 45 (28-Mar-26 Short at $66,366.42) is the live Supabase signal — kept out of static
+  // so the 1-week delay gate works correctly for free users
 ];
 
 // TPI-filtered signals (Strategy + TPI layer) — original curated list
@@ -248,7 +259,6 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   const visibleSignal = isPremium
     ? activeSignal
     : signals.find(s => s.status === 'active' && new Date().getTime() - new Date(s.created_at).getTime() >= DELAY_MS) || null;
-  const isDelayed = !isPremium && !!visibleSignal;
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
@@ -303,6 +313,18 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     const latestHardcodedDate = latestHardcoded?.isoDate
       ? new Date(latestHardcoded.isoDate).getTime() : 0;
     if (signalDate <= latestHardcodedDate) return baseHistory;
+
+    // Close the previous open entry's P&L against the live signal price
+    if (baseHistory.length > 0 && baseHistory[0].pnlPct === null) {
+      const prev = baseHistory[0];
+      const pnlPct = prev.type === 'Long'
+        ? (activeSignal.signal_price - prev.price) / prev.price * 100
+        : (prev.price - activeSignal.signal_price) / prev.price * 100;
+      const prevRunningBalance = baseHistory[1]?.balance ?? 1000;
+      const newBalance = Math.round(prevRunningBalance * (1 + pnlPct / 100));
+      const closedPrev = { ...prev, pnlPct, balance: newBalance };
+      return [liveEntry, closedPrev, ...baseHistory.slice(1)];
+    }
 
     return [liveEntry, ...baseHistory];
   };
@@ -387,20 +409,6 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
 
       <main className="container mx-auto px-4 py-8 space-y-6">
 
-        {/* Free tier delay banner */}
-        {isDelayed && (
-          <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl px-5 py-3.5 flex items-center gap-3">
-            <Clock size={16} className="text-amber-400 shrink-0" />
-            <div>
-              <p className="text-amber-300 font-medium text-sm">
-                You are viewing signals with a 1-week delay on the Free Plan.
-              </p>
-              <p className="text-gray-500 text-xs mt-0.5">
-                Upgrade to Premium to receive signals the moment they fire.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Page title */}
         <div>
@@ -408,7 +416,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
           <p className="text-gray-400 text-sm mt-1">
             Data-driven long/short entries. Trade management stays fully in your hands.
           </p>
-          {visibleSignal && (
+          {isPremium && visibleSignal && (
             <div className={`inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full text-sm font-medium border ${
               visibleSignal.signal_type?.toLowerCase() === 'long'
                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
@@ -425,74 +433,60 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
 
 
 
-        {/* Main content grid — signal + TPI panels side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Main content grid — signal + TPI panels side by side (premium only) */}
+        {isPremium ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-          {/* Signal card — takes 2 cols */}
-          <div className="lg:col-span-2">
-            <div className="bg-[#121826] rounded-2xl p-5 border border-[#1F2937] h-full">
-              {visibleSignal ? (
-                <>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-[#0F172A] p-2.5 rounded-xl border border-[#1F2937]">
-                      {getSignalIcon(visibleSignal.signal_type)}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white">{visibleSignal.coin}</h3>
-                      <p className="text-gray-400 text-xs">BTC / USDT</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5 mb-4">
-                    <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
-                      <div className="text-gray-500 text-xs mb-1">Triggered At</div>
-                      <div className="text-white font-bold">{formatDate(visibleSignal.created_at)}</div>
-                    </div>
-                    <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
-                      <div className="text-gray-500 text-xs mb-1">Triggered Price</div>
-                      <div className="text-white font-bold">${visibleSignal.signal_price.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
-                      <div className="text-gray-500 text-xs mb-1 font-medium">Trade Management</div>
-                      <p className="text-gray-300 text-xs leading-relaxed">
-                        Tradinsight provides entry direction only. Take profit and stop loss are managed by you.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Analysis — premium only */}
-                  {isPremium ? (
-                    <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
-                      <div className="text-gray-500 text-xs mb-1 font-medium">Signal Analysis</div>
-                      <p className="text-gray-300 text-xs leading-relaxed">{visibleSignal.analysis}</p>
-                    </div>
-                  ) : (
-                    <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#C69214]/15">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Lock size={11} className="text-[#D4A017]" />
-                        <div className="text-[#D4A017] text-xs font-medium">Signal Analysis</div>
+            {/* Signal card — takes 2 cols */}
+            <div className="lg:col-span-2">
+              <div className="bg-[#121826] rounded-2xl p-5 border border-[#1F2937] h-full">
+                {visibleSignal ? (
+                  <>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-[#0F172A] p-2.5 rounded-xl border border-[#1F2937]">
+                        {getSignalIcon(visibleSignal.signal_type)}
                       </div>
-                      <p className="text-gray-500 text-xs">Upgrade to see the full TPI breakdown and reasoning behind this signal.</p>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">{visibleSignal.coin}</h3>
+                        <p className="text-gray-400 text-xs">BTC / USDT</p>
+                      </div>
                     </div>
-                  )}
-                </>
-              ) : (
-                <div className="py-6 text-center">
-                  <div className="w-10 h-10 rounded-full bg-[#0F172A] border border-[#1F2937] flex items-center justify-center mx-auto mb-3">
-                    <Clock size={18} className="text-gray-500" />
-                  </div>
-                  <h3 className="text-white font-semibold text-sm mb-1">No active signal</h3>
-                  <p className="text-gray-500 text-xs leading-relaxed">
-                    Market conditions not met. The system waits until all layers align before firing.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* TPI Status — right column, 1 col */}
-          <div>
-            {isPremium ? (
+                    <div className="space-y-2.5 mb-4">
+                      <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
+                        <div className="text-gray-500 text-xs mb-1">Triggered At</div>
+                        <div className="text-white font-bold">{formatDate(visibleSignal.created_at)}</div>
+                      </div>
+                      <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
+                        <div className="text-gray-500 text-xs mb-1">Triggered Price</div>
+                        <div className="text-white font-bold">${visibleSignal.signal_price.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-[#0F172A]/70 rounded-xl p-3.5 border border-[#1F2937]">
+                        <div className="text-gray-500 text-xs mb-1 font-medium">Trade Management</div>
+                        <p className="text-gray-300 text-xs leading-relaxed">
+                          Tradinsight provides entry direction only. Take profit and stop loss are managed by you.
+                        </p>
+                      </div>
+                    </div>
+
+
+                  </>
+                ) : (
+                  <div className="py-6 text-center">
+                    <div className="w-10 h-10 rounded-full bg-[#0F172A] border border-[#1F2937] flex items-center justify-center mx-auto mb-3">
+                      <Clock size={18} className="text-gray-500" />
+                    </div>
+                    <h3 className="text-white font-semibold text-sm mb-1">No active signal</h3>
+                    <p className="text-gray-500 text-xs leading-relaxed">
+                      Market conditions not met. The system waits until all layers align before firing.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* TPI Status — right column, 1 col */}
+            <div>
               <div className="bg-[#121826] rounded-2xl p-5 border border-cyan-500/20 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-5">
                   <BarChart2 size={15} className="text-cyan-400" />
@@ -531,30 +525,47 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                     </div>
                   </div>
                 </div>
-
               </div>
-            ) : (
-              <div className="bg-[#121826] rounded-2xl p-5 border border-[#1F2937] h-full flex flex-col">
+            </div>
+          </div>
+        ) : (
+          /* Free user — slim banner + locked TPI panel */
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Slim upgrade banner — spans 2 cols */}
+            <div className="lg:col-span-2 flex items-center justify-between gap-4 bg-[#121826] border border-cyan-500/20 rounded-2xl px-5 py-3.5">
+              <p className="text-sm leading-snug">
+                <span style={{ color: '#f59e0b' }}>Latest signal delayed 1 week on the free plan.</span>
+                {' '}
+                <span style={{ color: '#a1a1aa' }}>Premium members see it the moment it fires — plus full TPI breakdown.</span>
+              </p>
+              <button
+                onClick={onUnlockPremium}
+                className="shrink-0 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+                style={{ color: '#d4a017', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.35)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(212,160,23,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(212,160,23,0.1)')}
+              >
+                Upgrade
+              </button>
+            </div>
+
+            {/* Locked TPI panel — right column */}
+            <div>
+              <div className="bg-[#121826] rounded-2xl p-5 border border-cyan-500/20 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-5">
-                  <BarChart2 size={15} className="text-gray-600" />
+                  <BarChart2 size={15} className="text-cyan-400" />
                   <h3 className="text-white font-semibold text-sm">Market Conditions</h3>
-                  <span className="ml-auto text-xs text-gray-500">Live TPI</span>
                 </div>
 
                 <div className="space-y-4 flex-1">
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-white text-xs font-semibold">TPI — Medium Term</span>
-                      <span className="flex items-center gap-1 text-xs text-gray-600 bg-[#0B0F19] border border-[#1F2937] rounded-full px-2.5 py-0.5">
-                        <Lock size={9} /> Locked
-                      </span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ color: '#d4a017', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.25)' }}>Locked</span>
                     </div>
-                    <p className="text-gray-600 text-xs leading-relaxed mb-3">
-                      Trend and momentum signals across timeframes and correlated assets.
-                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {['Momentum', 'SuperTrend', 'SAR', 'DMI', 'Hull Suite', 'SPX', 'DXY'].map(tag => (
-                        <span key={tag} className="text-[10px] text-gray-700 bg-[#0B0F19] border border-[#1F2937] rounded px-2 py-0.5">{tag}</span>
+                        <span key={tag} className="text-[10px] text-gray-500 bg-[#0B0F19] border border-[#1F2937] rounded px-2 py-0.5">{tag}</span>
                       ))}
                     </div>
                   </div>
@@ -562,28 +573,21 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                   <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937]">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-white text-xs font-semibold">Value Indicator — Long Term</span>
-                      <span className="flex items-center gap-1 text-xs text-gray-600 bg-[#0B0F19] border border-[#1F2937] rounded-full px-2.5 py-0.5">
-                        <Lock size={9} /> Locked
-                      </span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ color: '#d4a017', background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.25)' }}>Locked</span>
                     </div>
-                    <p className="text-gray-600 text-xs leading-relaxed mb-3">
-                      On-chain fundamentals revealing BTC long-term market cycle position.
-                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {['CVDD', 'Reserve Risk', 'Puell', 'MVRV', 'NUPL', 'BEAM', 'RHODL'].map(tag => (
-                        <span key={tag} className="text-[10px] text-gray-700 bg-[#0B0F19] border border-[#1F2937] rounded px-2 py-0.5">{tag}</span>
+                        <span key={tag} className="text-[10px] text-gray-500 bg-[#0B0F19] border border-[#1F2937] rounded px-2 py-0.5">{tag}</span>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <p className="mt-4 text-gray-600 text-xs text-center">
-                  Available on Premium
-                </p>
+                <p className="text-xs font-semibold mt-4 text-center" style={{ color: '#d4a017' }}>Available on Premium</p>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* BTC Price Chart — full width, visible to all users */}
         <div className="bg-[#121826] rounded-2xl p-5 border border-[#1F2937]">
@@ -698,7 +702,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                 }`}
               >
                 Strategy Only
-                <span className="ml-1.5 text-[10px] opacity-60">{SIGNAL_HISTORY.length} signals</span>
+                <span className="ml-1.5 text-[10px] opacity-60">{rawHistory.length} signals</span>
               </button>
               <button
                 onClick={() => { setHistoryTab('tpi'); setShowFullHistory(false); }}
@@ -709,7 +713,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                 }`}
               >
                 Strategy + TPI
-                <span className="ml-1.5 text-[10px] opacity-60">{TPI_HISTORY.length} signals</span>
+                <span className="ml-1.5 text-[10px] opacity-60">{tpiHistory.length} signals</span>
               </button>
             </div>
           </div>

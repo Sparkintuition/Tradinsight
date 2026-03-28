@@ -22,7 +22,6 @@ Deno.serve(async (req) => {
 
   const rawDirection = String(body.direction ?? body.action ?? '')
   const price        = Number(body.price ?? body.close ?? 0)
-  const date         = String(body.date  ?? new Date().toISOString().split('T')[0])
   const analysis     = body.analysis ? String(body.analysis) : null
 
   if (!rawDirection || !price) {
@@ -40,9 +39,8 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
   const { data, error } = await supabase
-    .from('crypto_signals')
+    .from('eth_signals')
     .insert({
-      coin:         'ETH',
       signal_type:  direction,
       signal_price: price,
       status:       'active',
@@ -57,18 +55,6 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     })
   }
-
-  fetch(`${SUPABASE_URL}/functions/v1/send-signal-email`, {
-    method: 'POST',
-    headers: {
-      Authorization:  `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      type:   'signal',
-      signal: { direction, price, date },
-    }),
-  }).catch(() => { /* non-critical */ })
 
   return new Response(JSON.stringify({ ok: true, id: data.id }), {
     status: 200,
