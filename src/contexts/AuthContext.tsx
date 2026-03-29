@@ -48,31 +48,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      setSession(session ?? null);
-      setUser(session?.user ?? null);
-      setLoading(false);
-
-      // After email confirmation, create the profile if it doesn't exist yet
-      // (profile upsert is skipped during signUp when no session is returned)
       if (event === 'SIGNED_IN' && session?.user) {
-        // A new sign-in always clears the signed-out flag so resolveFlow
-        // doesn't short-circuit on the stale flag from a previous session
+        // Clear stale signed-out flag so resolveFlow doesn't short-circuit
         sessionStorage.removeItem('tradinsight_signed_out');
 
-        // Create profile if it doesn't exist yet (post email-confirmation path,
-        // where signUp skipped the upsert because no session existed at signup time)
+        // Ensure profile exists before exposing the user to the rest of the app.
+        // Awaited so that resolveFlow never routes to /survey before the profile row exists.
         const u = session.user;
-        supabase
+        const { data: existingProfile } = await supabase
           .from('profiles')
-          .upsert([{
+          .select('id')
+          .eq('id', u.id)
+          .single();
+
+        if (!existingProfile) {
+          await supabase.from('profiles').insert({
             id: u.id,
             email: u.email,
             full_name: u.user_metadata?.full_name || '',
-          }], { ignoreDuplicates: true });
+          });
+        }
       }
+
+      if (!mounted) return;
+      setSession(session ?? null);
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => {
