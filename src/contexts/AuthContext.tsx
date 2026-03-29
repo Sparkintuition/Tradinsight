@@ -48,12 +48,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
       setSession(session ?? null);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // After email confirmation, create the profile if it doesn't exist yet
+      // (profile upsert is skipped during signUp when no session is returned)
+      if (event === 'SIGNED_IN' && session?.user) {
+        const u = session.user;
+        supabase
+          .from('profiles')
+          .upsert([{
+            id: u.id,
+            email: u.email,
+            full_name: u.user_metadata?.full_name || '',
+          }], { ignoreDuplicates: true });
+      }
     });
 
     return () => {
@@ -71,11 +84,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: { data: { full_name: fullName } },
       });
 
       if (error) throw error;
 
-      if (data.user) {
+      // Only upsert profile immediately if a session exists (email confirmation disabled).
+      // When email confirmation is enabled, session is null here — profile is created
+      // by the SIGNED_IN onAuthStateChange handler after the user confirms their email.
+      if (data.user && data.session) {
         const { error: profileError } = await supabase.from('profiles').upsert([
           {
             id: data.user.id,
