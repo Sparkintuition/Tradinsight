@@ -44,6 +44,21 @@ function AppRoutes() {
         return;
       }
 
+      // Handle Stripe checkout return params (?checkout=cancel or ?checkout=success)
+      // Must run before other URL checks so the app doesn't get stuck on landing.
+      const stripeParams = new URLSearchParams(window.location.search);
+      const checkoutStatus = stripeParams.get('checkout');
+      if (checkoutStatus === 'cancel') {
+        window.history.replaceState({}, '', '/subscription');
+        navigate('/subscription', { replace: true });
+        return;
+      }
+      if (checkoutStatus === 'success') {
+        window.history.replaceState({}, '', '/dashboard');
+        navigate('/dashboard', { replace: true });
+        return;
+      }
+
       // Handle email confirmation callback — two formats Supabase may send:
       //
       // 1. PKCE/token_hash (query param): ?token_hash=...&type=signup
