@@ -48,35 +48,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Clear stale signed-out flag so resolveFlow doesn't short-circuit
+      // Update auth state immediately — never block loading on async work
+      if (event === 'SIGNED_IN') {
         sessionStorage.removeItem('tradinsight_signed_out');
-
-        // Ensure profile exists before exposing the user to the rest of the app.
-        // Awaited so that resolveFlow never routes to /survey before the profile row exists.
-        const u = session.user;
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', u.id)
-          .single();
-
-        if (!existingProfile) {
-          await supabase.from('profiles').insert({
-            id: u.id,
-            email: u.email,
-            full_name: u.user_metadata?.full_name || '',
-          });
-        }
       }
-
-      if (!mounted) return;
       setSession(session ?? null);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Ensure profile row exists after sign-in (post email-confirmation path).
+      // Runs in the background — does not block auth state or routing.
+      if (event === 'SIGNED_IN' && session?.user) {
+        const u = session.user;
+        supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', u.id)
+          .single()
+          .then(({ data: existingProfile }) => {
+            if (!existingProfile && mounted) {
+              supabase.from('profiles').insert({
+                id: u.id,
+                email: u.email,
+                full_name: u.user_metadata?.full_name || '',
+              });
+            }
+          })
+          .catch(() => {
+            // Profile creation failed — survey submission will surface its own error
+          });
+      }
     });
 
     return () => {
