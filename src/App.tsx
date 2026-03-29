@@ -44,23 +44,33 @@ function AppRoutes() {
         return;
       }
 
-      // Handle email confirmation callback (token_hash + type=signup or type=email)
-      // Supabase does NOT auto-process token_hash — it requires an explicit verifyOtp call.
-      // After verifyOtp succeeds, onAuthStateChange fires SIGNED_IN → user is set →
-      // this effect re-runs with the confirmed user and routes to survey/dashboard.
+      // Handle email confirmation callback — two formats Supabase may send:
+      //
+      // 1. PKCE/token_hash (query param): ?token_hash=...&type=signup
+      //    Supabase does NOT auto-process this — requires explicit verifyOtp.
+      //
+      // 2. Implicit flow (hash fragment): #access_token=...&type=signup
+      //    Supabase client auto-processes via detectSessionInUrl, but async.
+      //    If user is still null when we reach here, hold the loading state
+      //    until onAuthStateChange fires (it will re-trigger this effect).
+
+      // Case 1: token_hash in query string
       const urlParams = new URLSearchParams(window.location.search);
       const tokenHash = urlParams.get('token_hash');
       const urlType = urlParams.get('type');
       if (tokenHash && (urlType === 'signup' || urlType === 'email')) {
-        // Clear the token params from the URL immediately (cosmetic + prevents double-processing)
         window.history.replaceState({}, '', window.location.pathname);
         const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email' });
-        if (error) {
-          // Token invalid or expired — drop to landing page with flow resolved
-          setCheckingFlow(false);
-        }
-        // On success: onAuthStateChange fires SIGNED_IN → setUser → effect re-runs → routes correctly
-        // On error: checkingFlow is false, user stays null, landing page is shown
+        if (error) setCheckingFlow(false);
+        // On success: SIGNED_IN fires → setUser → re-runs → routes to survey/dashboard
+        return;
+      }
+
+      // Case 2: implicit hash fragment (#access_token=...&type=signup)
+      // Supabase processes this automatically; hold the spinner until user is set.
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      if (hashParams.get('access_token') && hashParams.get('type') === 'signup' && !user) {
+        // Keep checkingFlow true — onAuthStateChange will fire shortly and re-trigger this effect
         return;
       }
 
@@ -87,8 +97,12 @@ function AppRoutes() {
               // Free user with completed survey — send to dashboard
               navigate('/dashboard', { replace: true });
               return;
+            } else {
+              // Logged-in but no survey yet — send to survey
+              // Covers: post-email-confirmation, post-login for new users
+              navigate('/survey', { replace: true });
+              return;
             }
-            // No survey yet — stay on landing, let them click CTA
           } catch {
             // On error stay on landing
           }

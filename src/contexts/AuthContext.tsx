@@ -58,6 +58,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // After email confirmation, create the profile if it doesn't exist yet
       // (profile upsert is skipped during signUp when no session is returned)
       if (event === 'SIGNED_IN' && session?.user) {
+        // A new sign-in always clears the signed-out flag so resolveFlow
+        // doesn't short-circuit on the stale flag from a previous session
+        sessionStorage.removeItem('tradinsight_signed_out');
+
+        // Create profile if it doesn't exist yet (post email-confirmation path,
+        // where signUp skipped the upsert because no session existed at signup time)
         const u = session.user;
         supabase
           .from('profiles')
