@@ -95,20 +95,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // Only upsert profile immediately if a session exists (email confirmation disabled).
-      // When email confirmation is enabled, session is null here — profile is created
-      // by the SIGNED_IN onAuthStateChange handler after the user confirms their email.
-      if (data.user && data.session) {
-        const { error: profileError } = await supabase.from('profiles').upsert([
-          {
-            id: data.user.id,
-            email: data.user.email,
-            full_name: fullName,
-          },
-        ]);
-
-        if (profileError) throw profileError;
-      }
+      // Profile is created automatically by the on_auth_user_created DB trigger.
+      // No manual insert needed here.
 
       return { error: null };
     } catch (error) {
