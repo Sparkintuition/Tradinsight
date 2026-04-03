@@ -37,8 +37,8 @@ interface HistoryEntry {
   date: string;
   type: string;
   price: number;
-  tpiMedium: string;
-  tpiLong: string;
+  tpiMedium: string | null;
+  tpiLong: string | null;
   isoDate: string;
   pnlPct: number | null;
   balance: number;
@@ -111,16 +111,35 @@ const RAW_SIGNALS = [
 // TPI-filtered signals (Strategy + TPI layer) — original curated list
 // These are the signals that passed BOTH the strategy AND the TPI filter
 const TPI_SIGNALS = [
-  { date: '5-Oct-20',   type: 'Long',  price: 10580,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2020-10-05' },
-  { date: '17-Apr-21',  type: 'Short', price: 59427,  tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2021-04-17' },
-  { date: '24-Jul-21',  type: 'Long',  price: 34897,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2021-07-24' },
-  { date: '20-Nov-21',  type: 'Short', price: 59854,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2021-11-20' },
-  { date: '1-Feb-22',   type: 'Long',  price: 24578,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2022-02-01' },
-  { date: '5-Apr-22',   type: 'Short', price: 45136,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2022-04-05' },
-  { date: '16-Jul-22',  type: 'Long',  price: 22525,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2022-07-16' },
-  { date: '22-Aug-22',  type: 'Short', price: 20819,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2022-08-22' },
-  { date: '7-Jan-23',   type: 'Long',  price: 17193,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2023-01-07' },
-  { date: '14-Apr-23',  type: 'Short', price: 30204,  tpiMedium: 'Negative', tpiLong: 'Positive',  isoDate: '2023-04-14' },
+  // Pre-Aug 2023: same signals as Strategy Only — TPI system not yet active
+  { date: '12-Jan-18',  type: 'Short', price: 13340.70, tpiMedium: null, tpiLong: null, isoDate: '2018-01-12' },
+  { date: '17-Jul-18',  type: 'Long',  price: 6726.42,  tpiMedium: null, tpiLong: null, isoDate: '2018-07-17' },
+  { date: '9-Aug-18',   type: 'Short', price: 6281.49,  tpiMedium: null, tpiLong: null, isoDate: '2018-08-09' },
+  { date: '19-Feb-19',  type: 'Long',  price: 3868.78,  tpiMedium: null, tpiLong: null, isoDate: '2019-02-19' },
+  { date: '24-Sep-19',  type: 'Short', price: 9690.72,  tpiMedium: null, tpiLong: null, isoDate: '2019-09-24' },
+  { date: '26-Oct-19',  type: 'Long',  price: 8674.51,  tpiMedium: null, tpiLong: null, isoDate: '2019-10-26' },
+  { date: '21-Nov-19',  type: 'Short', price: 8082.64,  tpiMedium: null, tpiLong: null, isoDate: '2019-11-21' },
+  { date: '7-Jan-20',   type: 'Long',  price: 7765.27,  tpiMedium: null, tpiLong: null, isoDate: '2020-01-07' },
+  { date: '27-Feb-20',  type: 'Short', price: 8779.99,  tpiMedium: null, tpiLong: null, isoDate: '2020-02-27' },
+  { date: '24-Apr-20',  type: 'Long',  price: 7511.39,  tpiMedium: null, tpiLong: null, isoDate: '2020-04-24' },
+  { date: '27-Jun-20',  type: 'Short', price: 9156.19,  tpiMedium: null, tpiLong: null, isoDate: '2020-06-27' },
+  { date: '22-Jul-20',  type: 'Long',  price: 9395.26,  tpiMedium: null, tpiLong: null, isoDate: '2020-07-22' },
+  { date: '4-Sep-20',   type: 'Short', price: 10171.53, tpiMedium: null, tpiLong: null, isoDate: '2020-09-04' },
+  { date: '9-Oct-20',   type: 'Long',  price: 10930.76, tpiMedium: null, tpiLong: null, isoDate: '2020-10-09' },
+  { date: '22-Apr-21',  type: 'Short', price: 53811.65, tpiMedium: null, tpiLong: null, isoDate: '2021-04-22' },
+  { date: '26-Jul-21',  type: 'Long',  price: 35430.07, tpiMedium: null, tpiLong: null, isoDate: '2021-07-26' },
+  { date: '11-Sep-21',  type: 'Short', price: 44852.77, tpiMedium: null, tpiLong: null, isoDate: '2021-09-11' },
+  { date: '6-Oct-21',   type: 'Long',  price: 51501.88, tpiMedium: null, tpiLong: null, isoDate: '2021-10-06' },
+  { date: '17-Nov-21',  type: 'Short', price: 60114.93, tpiMedium: null, tpiLong: null, isoDate: '2021-11-17' },
+  { date: '8-Feb-22',   type: 'Long',  price: 43879.08, tpiMedium: null, tpiLong: null, isoDate: '2022-02-08' },
+  { date: '12-Apr-22',  type: 'Short', price: 39536.78, tpiMedium: null, tpiLong: null, isoDate: '2022-04-12' },
+  { date: '26-Oct-22',  type: 'Long',  price: 20089.42, tpiMedium: null, tpiLong: null, isoDate: '2022-10-26' },
+  { date: '9-Nov-22',   type: 'Short', price: 18544.74, tpiMedium: null, tpiLong: null, isoDate: '2022-11-09' },
+  { date: '11-Jan-23',  type: 'Long',  price: 17442.91, tpiMedium: null, tpiLong: null, isoDate: '2023-01-11' },
+  { date: '22-Apr-23',  type: 'Short', price: 27263.68, tpiMedium: null, tpiLong: null, isoDate: '2023-04-22' },
+  { date: '21-Jun-23',  type: 'Long',  price: 28317.81, tpiMedium: null, tpiLong: null, isoDate: '2023-06-21' },
+  { date: '23-Jul-23',  type: 'Short', price: 29792.82, tpiMedium: null, tpiLong: null, isoDate: '2023-07-23' },
+  // Aug 2023+: TPI-filtered signals with full TPI and Value data
   { date: '16-Sep-23',  type: 'Long',  price: 27005,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2023-09-16' },
   { date: '5-Jan-24',   type: 'Short', price: 45776,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2024-01-05' },
   { date: '13-Feb-24',  type: 'Long',  price: 44923,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-02-13' },
@@ -143,7 +162,7 @@ const TPI_SIGNALS = [
 // Compute cumulative $1,000 simulation, oldest→newest
 // Each signal shows its OWN trade result (entry at this signal, exit at next signal)
 // Last signal (current open) shows live P&L via btcPrice
-function computeEarnings(signals: typeof RAW_SIGNALS) {
+function computeEarnings(signals: { date: string; type: string; price: number; tpiMedium: string | null; tpiLong: string | null; isoDate: string }[]) {
   let balance = 1000;
   return signals.map((s, i) => {
     const next = signals[i + 1];
@@ -165,7 +184,8 @@ function computeEarnings(signals: typeof RAW_SIGNALS) {
 const SIGNAL_HISTORY = computeEarnings(RAW_SIGNALS).reverse();
 const TPI_HISTORY = computeEarnings(TPI_SIGNALS).reverse();
 
-function TpiPill({ value }: { value: string }) {
+function TpiPill({ value }: { value: string | null }) {
+  if (value === null) return <span className="text-gray-500 text-sm">—</span>;
   const v = value.toLowerCase();
   if (v === 'positive') return (
     <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-0.5">

@@ -327,8 +327,31 @@ export function LandingPage({
       </section>
 
 
+      {/* ── VERIFY IT ── */}
+      <section className="container mx-auto px-4 py-20 text-center">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#fafafa] tracking-tight mb-4">
+            Don't trust us. Verify it.
+          </h2>
+          <p className="text-[#a1a1aa] text-base leading-relaxed mb-8 max-w-lg mx-auto">
+            Every signal since 2018 is public. Check the dates, the prices, and the results — then decide.
+          </p>
+          <a
+            href="#signal-history"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('signal-history')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="inline-flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-7 py-3.5 rounded-lg font-semibold text-sm transition-colors"
+          >
+            View Signal History
+            <ArrowRight size={15} />
+          </a>
+        </div>
+      </section>
+
       {/* ── PERFORMANCE STATS ── */}
-      <section className="container mx-auto px-4 py-8">
+      <section id="signal-history" className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-4">
             <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Strategy Performance</h2>
