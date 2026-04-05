@@ -1,4 +1,5 @@
-import { TrendingUp, Users, Shield, Clock, BarChart2, CheckCircle, ArrowRight, Zap, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Users, Shield, Clock, BarChart2, CheckCircle, ArrowRight, Zap, Filter } from 'lucide-react';
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -20,7 +21,7 @@ export function LandingPage({
       <header className="container mx-auto px-4 py-6 sticky top-0 z-50 bg-[#0B0F19]/80 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="text-cyan-400" size={28} />
+            <img src="/logo.svg" alt="Tradinsight" className="h-[26px] w-auto" />
             <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
           </div>
           <div className="flex items-center gap-3">
@@ -32,6 +33,12 @@ export function LandingPage({
                 How it Works
               </button>
             )}
+            <Link
+              to="/blog"
+              className="hidden sm:flex text-gray-400 hover:text-white text-sm transition-colors"
+            >
+              Blog
+            </Link>
             <button
               onClick={onLogin}
               className="text-gray-400 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"

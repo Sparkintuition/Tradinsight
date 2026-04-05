@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, Minus, TrendingUp, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Check, Minus, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -157,7 +157,7 @@ export function SubscriptionPage({ onGoHome, onBackToProfile }: SubscriptionPage
             Back
           </button>
           <div className="flex items-center gap-2">
-            <TrendingUp className="text-cyan-400" size={22} />
+            <img src="/logo.svg" alt="Tradinsight" className="h-6 w-auto" />
             <span className="text-white font-bold tracking-tight">Tradinsight</span>
           </div>
           <button

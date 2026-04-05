@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  TrendingUp, LogOut, ArrowRight, User, CreditCard,
+  LogOut, ArrowRight, User, CreditCard,
   Shield, Check, AlertTriangle, Eye, EyeOff, BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -142,7 +142,7 @@ export function AccountPage({ onNavigateDashboard, onUnlockPremium, onMethodolog
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <TrendingUp className="text-cyan-400" size={28} />
+              <img src="/logo.svg" alt="Tradinsight" className="h-[26px] w-auto" />
               <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
             </div>
             <div className="flex items-center gap-4">

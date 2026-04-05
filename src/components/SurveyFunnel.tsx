@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   ArrowLeft,
   Check,
-  TrendingUp,
   AlertTriangle,
   Target,
   Clock,
@@ -337,7 +336,7 @@ export function SurveyFunnel({ onComplete, onBack, initialStep }: SurveyFunnelPr
               </button>
 
               <div className="flex items-center gap-2">
-                <TrendingUp className="text-cyan-400" size={18} />
+                <img src="/logo.svg" alt="Tradinsight" className="h-5 w-auto" />
                 <span className="text-white font-semibold tracking-tight text-sm">
                   Tradinsight
                 </span>

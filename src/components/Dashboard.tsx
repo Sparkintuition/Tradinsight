@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  TrendingUp, LogOut, ArrowUpRight, ArrowDownRight, Minus,
+  LogOut, ArrowUpRight, ArrowDownRight, Minus,
   Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User, ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -385,7 +385,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <TrendingUp className="text-cyan-400" size={28} />
+              <img src="/logo.svg" alt="Tradinsight" className="h-[26px] w-auto" />
               <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
             </div>
             <div className="flex items-center gap-5">

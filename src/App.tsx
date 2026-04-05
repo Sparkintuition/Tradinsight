@@ -18,6 +18,8 @@ import { TermsPage } from './components/TermsPage';
 import { AccountPage } from './components/AccountPage';
 import { ForgotPassword } from './components/ForgotPassword';
 import { ResetPassword } from './components/ResetPassword';
+import { BlogPage } from './components/BlogPage';
+import { BlogPost } from './components/BlogPost';
 import { supabase } from './lib/supabase';
 
 type AuthMode = 'signin' | 'signup';
@@ -40,6 +42,12 @@ function AppRoutes() {
 
       // Auth pages handle themselves — skip all redirect logic
       if (location.pathname === '/reset-password' || location.pathname === '/forgot-password') {
+        setCheckingFlow(false);
+        return;
+      }
+
+      // Blog pages are always public
+      if (location.pathname.startsWith('/blog')) {
         setCheckingFlow(false);
         return;
       }
@@ -309,6 +317,8 @@ function AppRoutes() {
 
         <Route path="/forgot-password" element={<ForgotPassword onBack={() => { navigate('/'); setAuthMode('signin'); setShowAuthModal(true); }} />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
