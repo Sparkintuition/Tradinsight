@@ -21,7 +21,7 @@ export function LandingPage({
       <header className="container mx-auto px-4 py-6 sticky top-0 z-50 bg-[#0B0F19]/80 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo.svg" alt="Tradinsight" className="h-[26px] w-auto" />
+            <img src="/logo.svg" alt="Tradinsight" className="h-[24px] w-auto" />
             <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
           </div>
           <div className="flex items-center gap-3">

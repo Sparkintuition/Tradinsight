@@ -17,7 +17,7 @@ export function BlogPage() {
         <div className="container mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/logo.svg" alt="Tradinsight" className="h-[26px] w-auto" />
+              <img src="/logo.svg" alt="Tradinsight" className="h-[24px] w-auto" />
               <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
             </Link>
             <div className="flex items-center gap-5">

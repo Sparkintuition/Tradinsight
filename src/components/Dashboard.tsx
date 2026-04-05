@@ -385,7 +385,7 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/logo.svg" alt="Tradinsight" className="h-[26px] w-auto" />
+              <img src="/logo.svg" alt="Tradinsight" className="h-[24px] w-auto" />
               <span className="text-xl font-bold text-white tracking-tight">Tradinsight</span>
             </div>
             <div className="flex items-center gap-5">
