@@ -42,6 +42,21 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+  // Close any currently active BTC signals before inserting the new one
+  const { data: prevActive } = await supabase
+    .from('crypto_signals')
+    .select('id')
+    .eq('coin', 'BTC')
+    .eq('status', 'active')
+
+  if (prevActive && prevActive.length > 0) {
+    const ids = prevActive.map((s: { id: string }) => s.id)
+    await supabase
+      .from('crypto_signals')
+      .update({ status: 'closed' })
+      .in('id', ids)
+  }
+
   const { data, error } = await supabase
     .from('crypto_signals')
     .insert({

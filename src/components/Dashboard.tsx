@@ -233,8 +233,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
       setSubscription((subscriptionData?.[0] as Subscription) || null);
 
       const { data: signalsData, error: signalsError } = await supabase
-        .from('crypto_signals').select('*').eq('coin', 'BTC').eq('status', 'active')
-        .order('created_at', { ascending: false }).limit(1);
+        .from('crypto_signals').select('*').eq('coin', 'BTC')
+        .order('created_at', { ascending: false }).limit(10);
       if (signalsError) throw signalsError;
       setSignals(signalsData || []);
     } catch {
@@ -263,7 +263,9 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
   }, []);
 
   useEffect(() => {
-    if (!user || !profile?.is_premium) return;
+    if (!user) return;
+    // All users get realtime signal inserts so the history count stays current.
+    // The 1-week delay gate in buildHistory controls what free users can see.
     const channel = supabase.channel('crypto_signals_changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'crypto_signals' },
         (payload) => {
@@ -272,14 +274,14 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
         }
       ).subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, profile?.is_premium]);
+  }, [user]);
 
   const isPremium = !!profile?.is_premium;
   const DELAY_MS = 7 * 24 * 60 * 60 * 1000;
-  const activeSignal = signals[0] || null;
+  const activeSignal = signals.find(s => s.status === 'active') || null;
   const visibleSignal = isPremium
     ? activeSignal
-    : signals.find(s => s.status === 'active' && new Date().getTime() - new Date(s.created_at).getTime() >= DELAY_MS) || null;
+    : (activeSignal && Date.now() - new Date(activeSignal.created_at).getTime() >= DELAY_MS ? activeSignal : null);
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
@@ -301,57 +303,75 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     }
   };
 
-  // Merge latest Supabase signal into history if it's newer than hardcoded array
+  // Merge Supabase signals into history — handles multiple DB signals (e.g. after a new signal
+  // fires and the previous one is closed). Works for both RAW_SIGNALS and TPI_SIGNALS bases.
   const buildHistory = (baseHistory: typeof SIGNAL_HISTORY) => {
-    if (!activeSignal) return baseHistory;
-    const latestHardcoded = baseHistory[0]; // newest in reversed array
-    const signalIsoDate = activeSignal.created_at.split('T')[0];
-    const signalDate = new Date(activeSignal.created_at).getTime();
-    const isVisible = isPremium ||
-      new Date().getTime() - signalDate >= DELAY_MS;
-    if (!isVisible) return baseHistory; // hide entirely for free users if < 1 week
+    const lastHardcoded = baseHistory[0]; // newest entry (array is reversed)
+    const lastHardcodedTs = lastHardcoded?.isoDate
+      ? new Date(lastHardcoded.isoDate).getTime() : 0;
 
-    const liveEntry = {
-      date: new Date(activeSignal.created_at).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: '2-digit'
-      }).replace(/ /g, '-'),
-      type: activeSignal.signal_type?.toLowerCase() === 'long' ? 'Long' : 'Short',
-      price: activeSignal.signal_price,
-      tpiMedium: activeSignal.tpi_medium_term || 'Neutral',
-      tpiLong: activeSignal.tpi_value_indicator || 'Neutral',
-      isoDate: signalIsoDate,
-      pnlPct: null as null,
-      balance: 1000,
-    };
+    // All DB signals newer than the last hardcoded entry, sorted oldest→newest
+    const newDbSignals = [...signals]
+      .filter(s => new Date(s.created_at).getTime() > lastHardcodedTs)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-    // If live signal date matches latest hardcoded entry — replace it
-    // avoids duplicate rows when webhook fires on same day as hardcoded entry
-    if (latestHardcoded?.isoDate === signalIsoDate) {
-      return [liveEntry, ...baseHistory.slice(1)];
+    if (newDbSignals.length === 0) return baseHistory;
+
+    // For free users: exclude the newest signal if it's < 1 week old.
+    // Closed (older) DB signals are always included so the historical count stays correct.
+    const newestDbTs = new Date(newDbSignals[newDbSignals.length - 1].created_at).getTime();
+    const newestIsHidden = !isPremium && Date.now() - newestDbTs < DELAY_MS;
+    const visibleDbSignals = newestIsHidden ? newDbSignals.slice(0, -1) : newDbSignals;
+    if (visibleDbSignals.length === 0) return baseHistory;
+
+    // Running balance picks up from after the last hardcoded closed trade
+    let runningBalance = baseHistory[1]?.balance ?? 1000;
+
+    // Close the last hardcoded open entry (pnlPct === null) using the first DB signal as exit
+    let closedHardcoded: HistoryEntry | null = null;
+    if (lastHardcoded?.pnlPct === null) {
+      const exitPrice = visibleDbSignals[0].signal_price;
+      const pnlPct = lastHardcoded.type === 'Long'
+        ? (exitPrice - lastHardcoded.price) / lastHardcoded.price * 100
+        : (lastHardcoded.price - exitPrice) / lastHardcoded.price * 100;
+      runningBalance = Math.round(runningBalance * (1 + pnlPct / 100));
+      closedHardcoded = { ...lastHardcoded, pnlPct, balance: runningBalance };
     }
 
-    // Only prepend if genuinely newer than hardcoded latest
-    const latestHardcodedDate = latestHardcoded?.isoDate
-      ? new Date(latestHardcoded.isoDate).getTime() : 0;
-    if (signalDate <= latestHardcodedDate) return baseHistory;
+    // Build entries for each DB signal oldest→newest
+    // Closed entries (has a subsequent signal) get P&L computed; newest stays open (null)
+    const dbEntries: HistoryEntry[] = visibleDbSignals.map((s, i) => {
+      const next = visibleDbSignals[i + 1];
+      let pnlPct: number | null = null;
+      if (next) {
+        pnlPct = s.signal_type?.toLowerCase() === 'long'
+          ? (next.signal_price - s.signal_price) / s.signal_price * 100
+          : (s.signal_price - next.signal_price) / s.signal_price * 100;
+        runningBalance = Math.round(runningBalance * (1 + pnlPct / 100));
+      }
+      return {
+        date: new Date(s.created_at).toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'short', year: '2-digit'
+        }).replace(/ /g, '-'),
+        type: s.signal_type?.toLowerCase() === 'long' ? 'Long' : 'Short',
+        price: s.signal_price,
+        tpiMedium: s.tpi_medium_term || 'Neutral',
+        tpiLong: s.tpi_value_indicator || 'Neutral',
+        isoDate: s.created_at.split('T')[0],
+        pnlPct,
+        balance: runningBalance,
+      };
+    });
 
-    // Close the previous open entry's P&L against the live signal price
-    if (baseHistory.length > 0 && baseHistory[0].pnlPct === null) {
-      const prev = baseHistory[0];
-      const pnlPct = prev.type === 'Long'
-        ? (activeSignal.signal_price - prev.price) / prev.price * 100
-        : (prev.price - activeSignal.signal_price) / prev.price * 100;
-      const prevRunningBalance = baseHistory[1]?.balance ?? 1000;
-      const newBalance = Math.round(prevRunningBalance * (1 + pnlPct / 100));
-      const closedPrev = { ...prev, pnlPct, balance: newBalance };
-      return [liveEntry, closedPrev, ...baseHistory.slice(1)];
-    }
+    const base = closedHardcoded
+      ? [closedHardcoded, ...baseHistory.slice(1)]
+      : baseHistory;
 
-    return [liveEntry, ...baseHistory];
+    return [...dbEntries.reverse(), ...base];
   };
 
-  const rawHistory = useMemo(() => buildHistory(SIGNAL_HISTORY), [activeSignal, isPremium]);
-  const tpiHistory = useMemo(() => buildHistory(TPI_HISTORY), [activeSignal, isPremium]);
+  const rawHistory = useMemo(() => buildHistory(SIGNAL_HISTORY), [signals, isPremium]);
+  const tpiHistory = useMemo(() => buildHistory(TPI_HISTORY), [signals, isPremium]);
   const activeHistory = historyTab === 'strategy' ? rawHistory : tpiHistory;
   const displayHistory = showFullHistory ? activeHistory : activeHistory.slice(0, 8);
 
