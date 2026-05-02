@@ -108,7 +108,7 @@ const RAW_SIGNALS = [
   { date: '5-Jan-26',   type: 'Long',  price: 91489.27, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-01-05' },
   { date: '26-Jan-26',  type: 'Short', price: 86587.80, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-26' },
   { date: '5-Mar-26',   type: 'Long',  price: 72689.78, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-05' },
-  // Trade 45 (28-Mar-26 Hold at $66,366.44) is a live Supabase signal — kept out of static
+  // Trade 45 (28-Mar-26 Hold at $68,456) is a live Supabase signal — kept out of static
   // so the 1-week delay gate works correctly for free users.
   // Note: as a Hold, it's filtered out of the Strategy Only tab (excludeHold=true) and only
   // appears on the Strategy + TPI tab.
