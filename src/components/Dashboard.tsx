@@ -2,15 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LogOut, ArrowUpRight, ArrowDownRight, Minus,
-  Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User, ExternalLink,
+  Lock, Clock, BarChart2, Shield, ChevronDown, ChevronUp, Zap, BookOpen, User, ExternalLink, Info,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
+type SignalDirection = 'Long' | 'Short' | 'Hold';
+
 interface Signal {
   id: string;
   coin: string;
-  signal_type: string;
+  signal_type: SignalDirection;
   signal_price: number;
   confidence: number;
   analysis: string;
@@ -33,6 +35,8 @@ interface Subscription {
 }
 
 // Typed shape produced by computeEarnings() after reversal
+// `type` is a string (widened from RAW_SIGNALS / TPI_SIGNALS literals), but runtime values
+// are always one of the SignalDirection labels: 'Long', 'Short', or 'Hold'.
 interface HistoryEntry {
   date: string;
   type: string;
@@ -104,8 +108,10 @@ const RAW_SIGNALS = [
   { date: '5-Jan-26',   type: 'Long',  price: 91489.27, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-01-05' },
   { date: '26-Jan-26',  type: 'Short', price: 86587.80, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-26' },
   { date: '5-Mar-26',   type: 'Long',  price: 72689.78, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-05' },
-  // Trade 45 (28-Mar-26 Short at $66,366.42) is the live Supabase signal — kept out of static
-  // so the 1-week delay gate works correctly for free users
+  // Trade 45 (28-Mar-26 Hold at $66,366.44) is a live Supabase signal — kept out of static
+  // so the 1-week delay gate works correctly for free users.
+  // Note: as a Hold, it's filtered out of the Strategy Only tab (excludeHold=true) and only
+  // appears on the Strategy + TPI tab.
 ];
 
 // TPI-filtered signals (Strategy + TPI layer) — original curated list
@@ -144,10 +150,14 @@ const TPI_SIGNALS = [
   { date: '5-Jan-24',   type: 'Short', price: 45776,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2024-01-05' },
   { date: '13-Feb-24',  type: 'Long',  price: 44923,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-02-13' },
   { date: '11-Apr-24',  type: 'Short', price: 69879,  tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2024-04-11' },
+  // Historical Hold: Grayscale ETF outflows + first major Q2 2024 drawdown
+  { date: '13-Apr-24',  type: 'Hold',  price: 63988,  tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2024-04-13' },
   { date: '9-Jul-24',   type: 'Long',  price: 57089,  tpiMedium: 'Neutral',  tpiLong: 'Positive',  isoDate: '2024-07-09' },
   { date: '30-Jul-24',  type: 'Short', price: 66680,  tpiMedium: 'Negative', tpiLong: 'Positive',  isoDate: '2024-07-30' },
   { date: '25-Sep-24',  type: 'Long',  price: 59214,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2024-09-25' },
   { date: '11-Dec-24',  type: 'Short', price: 101449, tpiMedium: 'Neutral',  tpiLong: 'Negative',  isoDate: '2024-12-11' },
+  // Historical Hold: Trump tariff shock — BTC dropped from $106k to $76k in weeks
+  { date: '8-Mar-25',   type: 'Hold',  price: 86445,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-03-08' },
   { date: '22-Apr-25',  type: 'Long',  price: 87157,  tpiMedium: 'Positive', tpiLong: 'Positive',  isoDate: '2025-04-22' },
   { date: '22-May-25',  type: 'Short', price: 107848, tpiMedium: 'Neutral',  tpiLong: 'Neutral',   isoDate: '2025-05-22' },
   { date: '11-Jul-25',  type: 'Long',  price: 108701, tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2025-07-11' },
@@ -156,20 +166,55 @@ const TPI_SIGNALS = [
   { date: '14-Oct-25',  type: 'Short', price: 123206, tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2025-10-14' },
   { date: '19-Dec-25',  type: 'Long',  price: 85238,  tpiMedium: 'Positive', tpiLong: 'Negative',  isoDate: '2025-12-19' },
   { date: '26-Jan-26',  type: 'Short', price: 95263,  tpiMedium: 'Negative', tpiLong: 'Negative',  isoDate: '2026-01-26' },
-  { date: '4-Mar-26',   type: 'Long',  price: 65400,  tpiMedium: 'Positive', tpiLong: 'Neutral',   isoDate: '2026-03-04' },
+  // Historical Hold: macro liquidation event — -52% from October 2025 ATH
+  { date: '6-Feb-26',   type: 'Hold',  price: 72653,  tpiMedium: 'Negative', tpiLong: 'Neutral',   isoDate: '2026-02-06' },
+  // 4-Mar-26 Long lives in Supabase (real signal at $65,827.13) — merged in by buildHistory
 ];
 
-// Compute cumulative $1,000 simulation, oldest→newest
-// Each signal shows its OWN trade result (entry at this signal, exit at next signal)
-// Last signal (current open) shows live P&L via btcPrice
+// Compute cumulative $1,000 simulation, oldest→newest.
+//
+// Hold treatment: a Hold CLOSES the immediately-prior Long/Short position at the Hold's price
+// (the user converts to cash/stablecoin at that moment). The realised P&L is recorded on the
+// HOLD row itself (not on the prior Long/Short row), and the cumulative balance updates here.
+// The prior Long/Short row carries pnlPct=null + pre-open balance — its result is "transferred"
+// to the Hold row for display.
+//
+// Direction-aware close formula:
+//   prev=Long  → pnlPct = (holdPrice - longEntryPrice) / longEntryPrice
+//   prev=Short → pnlPct = (shortEntryPrice - holdPrice) / shortEntryPrice
+//
+// Edge case: a Hold with no prior open position (i=0 or prev is also a Hold = already-closed)
+// falls back to 0% / Cash / balance unchanged.
+//
+// Hold is excluded from any future win-rate calculation (neither win nor loss).
 function computeEarnings(signals: { date: string; type: string; price: number; tpiMedium: string | null; tpiLong: string | null; isoDate: string }[]) {
   let balance = 1000;
   return signals.map((s, i) => {
+    if (s.type === 'Hold') {
+      const prev = signals[i - 1];
+      if (!prev || prev.type === 'Hold') {
+        // No prior open position to close
+        return { ...s, pnlPct: 0, balance: Math.round(balance) };
+      }
+      // Close prior at THIS Hold's price. Direction comes from prev, not from the Hold itself.
+      const pnlPct = prev.type === 'Long'
+        ? (s.price - prev.price) / prev.price
+        : (prev.price - s.price) / prev.price;
+      const newBalance = balance * (1 + pnlPct);
+      balance = newBalance;
+      return { ...s, pnlPct: pnlPct * 100, balance: Math.round(newBalance) };
+    }
+    // Long or Short
     const next = signals[i + 1];
     if (!next) {
-      // Last signal = currently open, no closed P&L yet
+      // No subsequent signal — currently open
       return { ...s, pnlPct: null, balance: Math.round(balance) };
     }
+    if (next.type === 'Hold') {
+      // Realised by the next-row Hold; this row stays pnlPct=null and balance unchanged.
+      return { ...s, pnlPct: null, balance: Math.round(balance) };
+    }
+    // Next is Long/Short — close on this row (existing convention).
     const pnlPct = s.type === 'Long'
       ? (next.price - s.price) / s.price
       : (s.price - next.price) / s.price;
@@ -180,9 +225,23 @@ function computeEarnings(signals: { date: string; type: string; price: number; t
   });
 }
 
+// TPI tracking went live on 16 Sep 2023. Earlier signals exist (and are still shown on the
+// Strategy Only tab as part of the verified strategy history), but they pre-date our TPI
+// confirmation layer — their TPI / Value columns are blank, which weakens the
+// "TPI-confirmed signals" credibility story. So the Strategy + TPI tab is filtered to
+// signals on or after this date. Inclusive (>=) — 16 Sep 2023 itself IS shown.
+//
+// Do NOT remove this filter without consulting Yassine: it is a deliberate product
+// decision, not a bug. To change the cutoff, edit this single constant.
+const TPI_TRACKING_START = new Date('2023-09-16');
+
 // Display newest→oldest (reverse)
 const SIGNAL_HISTORY = computeEarnings(RAW_SIGNALS).reverse();
-const TPI_HISTORY = computeEarnings(TPI_SIGNALS).reverse();
+// Filter the hardcoded base BEFORE computeEarnings so the $1,000 simulation starts fresh
+// from the first visible TPI-era signal (per product spec — clean track record from Sep 2023).
+const TPI_HISTORY = computeEarnings(
+  TPI_SIGNALS.filter(s => new Date(s.isoDate) >= TPI_TRACKING_START)
+).reverse();
 
 function TpiPill({ value }: { value: string | null }) {
   if (value === null) return <span className="text-gray-500 text-sm">—</span>;
@@ -299,20 +358,48 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     switch (type?.toLowerCase()) {
       case 'long':  return <ArrowUpRight className="text-emerald-400" size={22} />;
       case 'short': return <ArrowDownRight className="text-rose-400" size={22} />;
-      default:      return <Minus className="text-[#C69214]" size={22} />;
+      // Hold and any unknown fall through to neutral gray (— icon).
+      default:      return <Minus className="text-gray-400" size={22} />;
     }
+  };
+
+  // Normalise a raw DB signal_type to one of the three valid display labels.
+  const normaliseType = (raw: string | undefined | null): SignalDirection => {
+    const v = raw?.toLowerCase();
+    if (v === 'long') return 'Long';
+    if (v === 'hold') return 'Hold';
+    return 'Short';
   };
 
   // Merge Supabase signals into history — handles multiple DB signals (e.g. after a new signal
   // fires and the previous one is closed). Works for both RAW_SIGNALS and TPI_SIGNALS bases.
-  const buildHistory = (baseHistory: typeof SIGNAL_HISTORY) => {
+  //
+  // `excludeHold` is set for the Strategy Only tab: Hold is a TPI-layer-only concept and must
+  // never appear on the raw-strategy tab (the strategy webhook also rejects Hold — defence in depth).
+  //
+  // Hold treatment in the merge (matches computeEarnings v3 above):
+  //   - A DB Hold closes the immediately-prior position (HC tail OR a DB Long/Short) at the
+  //     Hold's signal_price. The realised P&L is recorded on the Hold row.
+  //   - A DB Long/Short followed by a DB Hold has pnlPct=null (its close is on the Hold row).
+  //   - When the LAST hardcoded entry is an open Long/Short and the FIRST DB signal is a
+  //     Long/Short, the close is recorded on the HC Long/Short row (existing convention).
+  //   - When the LAST hardcoded entry is an open Long/Short and the FIRST DB signal is a Hold,
+  //     the close is recorded on the DB Hold row (the HC Long/Short stays pnlPct=null).
+  //   - Hold is excluded from win-rate calculation.
+  const buildHistory = (baseHistory: typeof SIGNAL_HISTORY, excludeHold = false, minDate?: Date) => {
     const lastHardcoded = baseHistory[0]; // newest entry (array is reversed)
     const lastHardcodedTs = lastHardcoded?.isoDate
       ? new Date(lastHardcoded.isoDate).getTime() : 0;
 
-    // All DB signals newer than the last hardcoded entry, sorted oldest→newest
+    // All DB signals newer than the last hardcoded entry, sorted oldest→newest.
+    // For the Strategy Only tab, drop Holds entirely — they're TPI-layer signals.
+    // For the Strategy + TPI tab, also drop anything before TPI_TRACKING_START (defence in
+    // depth: the hardcoded TPI_HISTORY is already filtered, but a backfilled DB row dated
+    // before the cutoff would otherwise sneak in).
     const newDbSignals = [...signals]
       .filter(s => new Date(s.created_at).getTime() > lastHardcodedTs)
+      .filter(s => !excludeHold || s.signal_type?.toLowerCase() !== 'hold')
+      .filter(s => !minDate || new Date(s.created_at) >= minDate)
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     if (newDbSignals.length === 0) return baseHistory;
@@ -324,13 +411,18 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     const visibleDbSignals = newestIsHidden ? newDbSignals.slice(0, -1) : newDbSignals;
     if (visibleDbSignals.length === 0) return baseHistory;
 
-    // Running balance picks up from after the last hardcoded closed trade
-    let runningBalance = baseHistory[1]?.balance ?? 1000;
+    // Running balance picks up where computeEarnings left off — that's baseHistory[0]'s
+    // balance (already accounts for any HC trailing Hold's realised close).
+    let runningBalance = baseHistory[0]?.balance ?? 1000;
 
-    // Close the last hardcoded open entry (pnlPct === null) using the first DB signal as exit
+    // Standard close-on-HC-row (existing convention): only fires when the last HC entry is an
+    // open Long/Short AND the first DB signal is a Long/Short. If the first DB signal is a
+    // Hold, the close is handled on the DB Hold row inside dbEntries.map below.
+    const firstDb = visibleDbSignals[0];
+    const firstDbIsHold = firstDb.signal_type?.toLowerCase() === 'hold';
     let closedHardcoded: HistoryEntry | null = null;
-    if (lastHardcoded?.pnlPct === null) {
-      const exitPrice = visibleDbSignals[0].signal_price;
+    if (lastHardcoded?.pnlPct === null && lastHardcoded.type !== 'Hold' && !firstDbIsHold) {
+      const exitPrice = firstDb.signal_price;
       const pnlPct = lastHardcoded.type === 'Long'
         ? (exitPrice - lastHardcoded.price) / lastHardcoded.price * 100
         : (lastHardcoded.price - exitPrice) / lastHardcoded.price * 100;
@@ -338,22 +430,60 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
       closedHardcoded = { ...lastHardcoded, pnlPct, balance: runningBalance };
     }
 
-    // Build entries for each DB signal oldest→newest
-    // Closed entries (has a subsequent signal) get P&L computed; newest stays open (null)
+    // Build entries for each DB signal oldest→newest.
     const dbEntries: HistoryEntry[] = visibleDbSignals.map((s, i) => {
+      const type = normaliseType(s.signal_type);
+
+      if (type === 'Hold') {
+        // Find prev: at i=0, prev is the HC tail if it's an open Long/Short; otherwise visibleDbSignals[i-1].
+        let prevType: SignalDirection | null = null;
+        let prevPrice = 0;
+        if (i === 0) {
+          if (lastHardcoded?.pnlPct === null && lastHardcoded.type !== 'Hold') {
+            prevType = lastHardcoded.type as SignalDirection;
+            prevPrice = lastHardcoded.price;
+          }
+        } else {
+          const prevDb = visibleDbSignals[i - 1];
+          prevType = normaliseType(prevDb.signal_type);
+          prevPrice = prevDb.signal_price;
+        }
+        let pnlPct: number = 0;
+        if (prevType && prevType !== 'Hold') {
+          pnlPct = prevType === 'Long'
+            ? (s.signal_price - prevPrice) / prevPrice * 100
+            : (prevPrice - s.signal_price) / prevPrice * 100;
+          runningBalance = Math.round(runningBalance * (1 + pnlPct / 100));
+        }
+        return {
+          date: new Date(s.created_at).toLocaleDateString('en-GB', {
+            day: 'numeric', month: 'short', year: '2-digit'
+          }).replace(/ /g, '-'),
+          type,
+          price: s.signal_price,
+          tpiMedium: s.tpi_medium_term || 'Neutral',
+          tpiLong: s.tpi_value_indicator || 'Neutral',
+          isoDate: s.created_at.split('T')[0],
+          pnlPct,
+          balance: runningBalance,
+        };
+      }
+
+      // Long or Short
       const next = visibleDbSignals[i + 1];
       let pnlPct: number | null = null;
-      if (next) {
-        pnlPct = s.signal_type?.toLowerCase() === 'long'
+      if (next && next.signal_type?.toLowerCase() !== 'hold') {
+        pnlPct = type === 'Long'
           ? (next.signal_price - s.signal_price) / s.signal_price * 100
           : (s.signal_price - next.signal_price) / s.signal_price * 100;
         runningBalance = Math.round(runningBalance * (1 + pnlPct / 100));
       }
+      // If next is a Hold OR no next: pnlPct=null (open or realised-by-next-Hold).
       return {
         date: new Date(s.created_at).toLocaleDateString('en-GB', {
           day: 'numeric', month: 'short', year: '2-digit'
         }).replace(/ /g, '-'),
-        type: s.signal_type?.toLowerCase() === 'long' ? 'Long' : 'Short',
+        type,
         price: s.signal_price,
         tpiMedium: s.tpi_medium_term || 'Neutral',
         tpiLong: s.tpi_value_indicator || 'Neutral',
@@ -370,8 +500,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
     return [...dbEntries.reverse(), ...base];
   };
 
-  const rawHistory = useMemo(() => buildHistory(SIGNAL_HISTORY), [signals, isPremium]);
-  const tpiHistory = useMemo(() => buildHistory(TPI_HISTORY), [signals, isPremium]);
+  const rawHistory = useMemo(() => buildHistory(SIGNAL_HISTORY, true), [signals, isPremium]);
+  const tpiHistory = useMemo(() => buildHistory(TPI_HISTORY, false, TPI_TRACKING_START), [signals, isPremium]);
   const activeHistory = historyTab === 'strategy' ? rawHistory : tpiHistory;
   const displayHistory = showFullHistory ? activeHistory : activeHistory.slice(0, 8);
 
@@ -457,19 +587,30 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
           <p className="text-gray-400 text-sm mt-1">
             Data-driven long/short entries. Trade management stays fully in your hands.
           </p>
-          {isPremium && visibleSignal && (
-            <div className={`inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full text-sm font-medium border ${
-              visibleSignal.signal_type?.toLowerCase() === 'long'
-                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-            }`}>
-              <span className="relative flex h-2 w-2">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${visibleSignal.signal_type?.toLowerCase() === 'long' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${visibleSignal.signal_type?.toLowerCase() === 'long' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-              </span>
-              {visibleSignal.signal_type?.toUpperCase()} active since {formatDate(visibleSignal.created_at)}
-            </div>
-          )}
+          {isPremium && visibleSignal && (() => {
+            const t = visibleSignal.signal_type?.toLowerCase();
+            const isHold = t === 'hold';
+            const isLong = t === 'long';
+            const palette = isHold
+              ? { bg: 'bg-gray-500/10', border: 'border-gray-500/20', text: 'text-gray-400', dot: 'bg-gray-400' }
+              : isLong
+              ? { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', dot: 'bg-emerald-400' }
+              : { bg: 'bg-rose-500/10', border: 'border-rose-500/20', text: 'text-rose-400', dot: 'bg-rose-400' };
+            return (
+              <div className={`inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full text-sm font-medium border ${palette.bg} ${palette.border} ${palette.text}`}>
+                <span className="relative flex h-2 w-2">
+                  {/* Hold = sitting in cash, no live P&L pulse needed */}
+                  {!isHold && (
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${palette.dot}`} />
+                  )}
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${palette.dot}`} />
+                </span>
+                {isHold
+                  ? <>Currently: Hold — sit in cash since {formatDate(visibleSignal.created_at)}</>
+                  : <>{visibleSignal.signal_type?.toUpperCase()} active since {formatDate(visibleSignal.created_at)}</>}
+              </div>
+            );
+          })()}
         </div>
 
 
@@ -637,23 +778,30 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
               <h2 className="text-lg font-bold text-white">BTC/USDT — Live Chart</h2>
               <p className="text-gray-500 text-xs">Track current price action alongside your signal</p>
             </div>
-            {visibleSignal && (
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-gray-500 text-xs">Signal entry</p>
-                  <p className={`text-sm font-bold ${visibleSignal.signal_type?.toLowerCase() === 'long' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    ${visibleSignal.signal_price.toLocaleString()}
-                  </p>
+            {visibleSignal && (() => {
+              const t = visibleSignal.signal_type?.toLowerCase();
+              const isHold = t === 'hold';
+              const isLong = t === 'long';
+              const priceColor = isHold ? 'text-gray-300' : isLong ? 'text-emerald-400' : 'text-rose-400';
+              const pillClass = isHold
+                ? 'bg-gray-500/15 text-gray-400'
+                : isLong
+                ? 'bg-emerald-500/15 text-emerald-400'
+                : 'bg-rose-500/15 text-rose-400';
+              return (
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-gray-500 text-xs">{isHold ? 'Hold price' : 'Signal entry'}</p>
+                    <p className={`text-sm font-bold ${priceColor}`}>
+                      ${visibleSignal.signal_price.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${pillClass}`}>
+                    {isHold ? 'HOLD — CASH' : `${visibleSignal.signal_type?.toUpperCase()} ACTIVE`}
+                  </div>
                 </div>
-                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${
-                  visibleSignal.signal_type?.toLowerCase() === 'long'
-                    ? 'bg-emerald-500/15 text-emerald-400'
-                    : 'bg-rose-500/15 text-rose-400'
-                }`}>
-                  {visibleSignal.signal_type?.toUpperCase()} ACTIVE
-                </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
           <div className="h-[460px] rounded-xl border border-[#1F2937] overflow-hidden">
@@ -773,6 +921,16 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
             )}
           </div>
 
+          {/* TPI cutoff explanation — only on Strategy + TPI tab */}
+          {historyTab === 'tpi' && (
+            <div className="px-4 sm:px-6 py-2 border-b border-[#1F2937] bg-cyan-500/[0.04] flex items-start gap-2">
+              <Info size={12} className="text-cyan-400/80 mt-0.5 shrink-0" />
+              <p className="text-gray-400 text-[11px] leading-relaxed">
+                <span className="text-gray-300">TPI tracking went live on September 16, 2023.</span> Signals before that date are available in the Strategy Only tab — they're part of our verified strategy history but predate our TPI confirmation layer.
+              </p>
+            </div>
+          )}
+
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
@@ -798,9 +956,15 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                         <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
                           signal.type === 'Long'
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : signal.type === 'Hold'
+                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
                             : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                         }`}>
-                          {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                          {signal.type === 'Long'
+                            ? <ArrowUpRight size={11} />
+                            : signal.type === 'Hold'
+                            ? <Minus size={11} />
+                            : <ArrowDownRight size={11} />}
                           {signal.type}
                         </span>
                       </td>
@@ -818,7 +982,33 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                         </td>
                       )}
                       <td className="px-6 py-3.5 text-right">
-                        {i === 0 && btcPrice && signal.price ? (() => {
+                        {signal.type === 'Hold' ? (() => {
+                          // Hold realised the prior Long/Short at this row's price. signal.pnlPct
+                          // holds the closed P&L (computed from the prior trade's direction).
+                          // If pnlPct is 0 and there was no prior open, fall back to plain Cash.
+                          const fmt = (n: number) => n >= 1000000
+                            ? (n / 1000000).toFixed(2) + 'M'
+                            : n >= 1000 ? (n / 1000).toFixed(1) + 'k'
+                            : Math.round(n).toLocaleString();
+                          const heldBalance = signal.balance ?? displayHistory[i + 1]?.balance ?? 1000;
+                          if (signal.pnlPct !== null && signal.pnlPct !== 0) {
+                            return (
+                              <div>
+                                <div className={`text-xs font-bold font-mono ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  {signal.pnlPct >= 0 ? '+' : ''}{signal.pnlPct.toFixed(1)}%
+                                  <span className="text-gray-500 font-normal text-[9px] ml-1">closed</span>
+                                </div>
+                                <div className="text-gray-400 text-[10px] font-mono mt-0.5">${fmt(heldBalance)}</div>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div>
+                              <div className="text-gray-400 text-xs font-bold font-mono">Cash</div>
+                              <div className="text-gray-500 text-[10px] font-mono mt-0.5">${fmt(heldBalance)}</div>
+                            </div>
+                          );
+                        })() : i === 0 && btcPrice && signal.price ? (() => {
                           // Live P&L: % change from entry price to current BTC price
                           const livePnlPct = signal.type === 'Long'
                             ? (btcPrice - signal.price) / signal.price * 100
@@ -840,7 +1030,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                             </div>
                           );
                         })() : signal.pnlPct === null ? (
-                          <span className="text-gray-500 text-xs font-mono">$1,000</span>
+                          // Long/Short whose close was realised on a newer Hold row above (i > 0).
+                          <span className="text-gray-500 text-xs font-mono">—</span>
                         ) : (
                           <div>
                             <div className={`text-xs font-bold font-mono ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -878,9 +1069,15 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                     <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
                       signal.type === 'Long'
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : signal.type === 'Hold'
+                        ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
                         : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                     }`}>
-                      {signal.type === 'Long' ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                      {signal.type === 'Long'
+                        ? <ArrowUpRight size={11} />
+                        : signal.type === 'Hold'
+                        ? <Minus size={11} />
+                        : <ArrowDownRight size={11} />}
                       {signal.type}
                     </span>
                   </div>
@@ -896,7 +1093,32 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                         </div>
                       )}
                     </div>
-                    {(i === 0 && btcPrice && signal.price ? (() => {
+                    {(signal.type === 'Hold' ? (() => {
+                        // Hold realised the prior trade at this row's price (signal.pnlPct is the
+                        // closed P&L). If pnlPct is 0, fall back to plain Cash (no prior open).
+                        const fmt = (n: number) => n >= 1000000
+                          ? (n / 1000000).toFixed(2) + 'M'
+                          : n >= 1000 ? (n / 1000).toFixed(1) + 'k'
+                          : Math.round(n).toLocaleString();
+                        const heldBalance = signal.balance ?? displayHistory[i + 1]?.balance ?? 1000;
+                        if (signal.pnlPct !== null && signal.pnlPct !== 0) {
+                          return (
+                            <div className="text-right">
+                              <div className={`text-xs font-bold ${signal.pnlPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {signal.pnlPct >= 0 ? '+' : ''}{signal.pnlPct.toFixed(1)}%
+                                <span className="text-gray-500 font-normal text-[9px] ml-1">closed</span>
+                              </div>
+                              <div className="text-gray-500 text-[10px] font-mono mt-0.5">${fmt(heldBalance)}</div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="text-right">
+                            <div className="text-gray-400 text-xs font-bold">Cash</div>
+                            <div className="text-gray-500 text-[10px] font-mono mt-0.5">${fmt(heldBalance)}</div>
+                          </div>
+                        );
+                      })() : i === 0 && btcPrice && signal.price ? (() => {
                         const livePnlPct = signal.type === 'Long'
                           ? (btcPrice - signal.price) / signal.price * 100
                           : (signal.price - btcPrice) / signal.price * 100;
@@ -929,7 +1151,8 @@ export function Dashboard({ onUnlockPremium, onMethodology, onAccount }: Dashboa
                           </div>
                         </div>
                       ) : (
-                        <span className="text-gray-500 text-xs font-mono">Start $1,000</span>
+                        // Long/Short whose close was realised on a newer Hold row above (i > 0).
+                        <span className="text-gray-500 text-xs font-mono">—</span>
                       )
                     )}
                   </div>

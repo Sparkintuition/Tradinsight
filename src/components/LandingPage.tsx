@@ -71,8 +71,8 @@ export function LandingPage({
           </h1>
 
           <p className="text-lg text-gray-300 mb-4 max-w-2xl mx-auto leading-relaxed relative">
-            Tradinsight signals only when multiple data systems align — strategy, trend, and market
-            conditions all pointing the same direction. Most months: no signal. When it fires: it matters.
+            Tradinsight signals only when multiple data systems align: strategy, trend, and market
+            conditions all pointing the same direction. Most months bring no signal. When it fires, it matters.
           </p>
 
           <p className="text-sm text-gray-500 mb-10 max-w-xl mx-auto">
@@ -113,7 +113,7 @@ export function LandingPage({
       <section className="container mx-auto px-4 py-6">
         <div className="max-w-3xl mx-auto rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
           <p className="text-amber-300 font-medium text-sm leading-relaxed">
-            Tradinsight fires 5–6 signals per year — not because it can't find more, but because only those setups meet the full criteria.
+            Tradinsight fires 5–6 signals per year. Not because it can't find more, but because only those setups meet the full criteria.
             If you need constant activity, this is the wrong tool. If you understand that <em>discipline creates an edge</em>, keep reading.
           </p>
         </div>
@@ -162,7 +162,7 @@ export function LandingPage({
               <div className="text-xs font-semibold text-cyan-400 tracking-widest uppercase mb-2">Layer 3</div>
               <h3 className="text-white font-semibold text-lg mb-2">Aligned Entry</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Only when both layers agree does Tradinsight generate an entry signal — with the price, direction, TPI state, and the full reasoning behind it.
+                Only when both layers agree does Tradinsight generate an entry signal, with the price, direction, TPI state, and the full reasoning behind it.
               </p>
             </div>
           </div>
@@ -170,6 +170,9 @@ export function LandingPage({
           {/* Connector line visual hint */}
           <p className="text-center text-gray-500 text-sm mt-8">
             Most signals from Layer 1 are filtered out by Layer 2. <span className="text-gray-300">That filtering is the edge.</span>
+          </p>
+          <p className="text-center text-gray-500 text-sm mt-3 max-w-2xl mx-auto">
+            When conditions deteriorate while a position is open, the system fires a Hold signal. The active position closes at the Hold's price and capital moves to cash until the next high-conviction setup.
           </p>
         </div>
       </section>
@@ -236,7 +239,7 @@ export function LandingPage({
               <div className="bg-[#0F172A]/70 rounded-xl p-4 border border-[#1F2937] mb-4">
                 <p className="text-gray-500 text-xs font-medium mb-1">Trade Management</p>
                 <p className="text-gray-300 text-xs leading-relaxed">
-                  Tradinsight provides entry direction only. Take profit and stop loss are set by you based on your risk tolerance and position size.
+                  Tradinsight provides entry direction. The system also fires Hold signals to exit positions when conditions deteriorate. Beyond that, take profit and stop loss are set by you based on your risk tolerance and position size.
                 </p>
               </div>
 
@@ -248,7 +251,7 @@ export function LandingPage({
                   <span className="ml-auto text-[10px] text-gray-600 border border-[#1F2937] rounded px-1.5 py-0.5">Premium</span>
                 </div>
                 <p className="text-gray-300 text-xs leading-relaxed">
-                  BTC has pulled back to a technically oversold level while the broader trend remains intact. Momentum is recovering, the macro environment is supportive, and on-chain data suggests BTC is fairly valued — not overextended. The strategy and TPI are in agreement. This is the type of setup the system waits months for.
+                  BTC has pulled back to a technically oversold level while the broader trend remains intact. Momentum is recovering, the macro environment is supportive, and on-chain data suggests BTC is fairly valued, not overextended. The strategy and TPI are in agreement. This is the type of setup the system waits months for.
                 </p>
               </div>
             </div>
@@ -299,7 +302,7 @@ export function LandingPage({
               <div className="bg-[#121826] rounded-2xl border border-[#1F2937] p-4 text-center">
                 <Clock size={14} className="text-gray-500 mx-auto mb-2" />
                 <p className="text-gray-400 text-xs leading-relaxed">
-                  A signal stays active until the next signal fires in the opposite direction. No exit target — trade management is always yours.
+                  A signal stays active until the next opposite-direction signal or a Hold signal closes the position. Day-to-day trade management between those points is yours.
                 </p>
               </div>
 
@@ -341,7 +344,7 @@ export function LandingPage({
             Don't trust us. Verify it.
           </h2>
           <p className="text-[#a1a1aa] text-base leading-relaxed mb-8 max-w-lg mx-auto">
-            Every signal since 2018 is public. Check the dates, the prices, and the results — then decide.
+            Every signal since 2018 is public. Check the dates, the prices, and the results, then decide.
           </p>
           <a
             href="#signal-history"
@@ -363,7 +366,7 @@ export function LandingPage({
           <div className="text-center mb-4">
             <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">Strategy Performance</h2>
             <p className="text-gray-400 text-sm max-w-xl mx-auto">
-              Backtested on BTC since 2018 — <span className="text-gray-300">raw strategy signals, no TPI filter applied.</span>
+              Backtested on BTC since 2018. <span className="text-gray-300">Raw strategy signals, no TPI filter applied.</span>
               <br />This is the baseline. The TPI layer improves on it further.
             </p>
           </div>
@@ -371,7 +374,7 @@ export function LandingPage({
           {/* "Floor not ceiling" callout */}
           <div className="max-w-2xl mx-auto mb-8 rounded-xl border border-cyan-500/15 bg-cyan-500/5 px-5 py-3 text-center">
             <p className="text-cyan-300 text-xs leading-relaxed">
-              <span className="font-semibold">These numbers include unfiltered signals</span> — entries the TPI would have skipped.
+              <span className="font-semibold">These numbers include unfiltered signals</span>. They're entries the TPI would have skipped.
               The full Tradinsight system (strategy + TPI) is designed to cut the noise and keep only the high-conviction setups.
               Think of this as the floor, not the ceiling.
             </p>
@@ -384,11 +387,11 @@ export function LandingPage({
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
               <p className="text-3xl font-bold text-white">65.1%</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Win rate —<br/>unfiltered baseline</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Win rate.<br/>Unfiltered baseline</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
               <p className="text-3xl font-bold text-white">4.59</p>
-              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor —<br/>wins outweigh losses by 359%</p>
+              <p className="text-gray-400 text-xs mt-2 leading-snug">Profit factor.<br/>Wins outweigh losses by 359%</p>
             </div>
             <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-6 text-center hover:border-cyan-400/30 transition-colors">
               <p className="text-3xl font-bold text-white">5–6</p>
@@ -407,10 +410,10 @@ export function LandingPage({
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">Equity Curve</h2>
           <p className="text-gray-400 text-sm mb-1">
-            Growth of $1,000 — <span className="text-gray-300">raw strategy signals, no TPI filter.</span>
+            Growth of $1,000. <span className="text-gray-300">Raw strategy signals, no TPI filter.</span>
           </p>
           <p className="text-gray-500 text-xs mb-8">
-            43 signals since 2018 · 4.54 profit factor · 62.8% win rate. This includes signals the TPI would have skipped. The live Tradinsight system applies the filter on top — targeting only the highest-conviction setups.
+            43 signals since 2018 · 4.54 profit factor · 62.8% win rate. This includes signals the TPI would have skipped. The live Tradinsight system applies the filter on top, targeting only the highest-conviction setups.
           </p>
           <div className="bg-[#121826] border border-[#1F2937] rounded-2xl p-4 shadow-lg shadow-black/20">
             <img src="/equity.png" alt="Equity Curve" className="rounded-xl w-full" />
@@ -434,12 +437,12 @@ export function LandingPage({
               {
                 icon: <Shield size={20} className="text-cyan-400" />,
                 title: 'Live TPI Status',
-                desc: 'See the current market regime — bullish, neutral, or bearish — updated regularly so you always know where conditions stand.',
+                desc: 'See the current market regime (bullish, neutral, or bearish), updated regularly so you always know where conditions stand.',
               },
               {
                 icon: <Clock size={20} className="text-cyan-400" />,
                 title: 'Signal Readiness Indicator',
-                desc: 'Know how close (or far) the system is from generating a signal. No guessing, no noise — just honest system state.',
+                desc: 'Know how close (or far) the system is from generating a signal. No guessing, no noise. Just honest system state.',
               },
               {
                 icon: <BarChart2 size={20} className="text-cyan-400" />,
@@ -522,14 +525,14 @@ export function LandingPage({
           </h2>
           <p className="text-gray-400 mb-2 text-sm leading-relaxed relative max-w-md mx-auto">
             Answer 4 questions. We'll tell you exactly how this system fits your approach.
-            Free plan available — no card required.
+            Free plan available, no card required.
           </p>
           <p className="text-gray-500 text-xs mb-8 relative">Free plan: access the full 43-signal history so you can verify the track record before committing.</p>
           <button
             onClick={onGetStarted}
             className="bg-[#D4A017] text-black px-8 py-4 rounded-lg font-semibold text-base hover:bg-[#E6B325] transition-colors inline-flex items-center gap-2 shadow-lg shadow-black/30 relative"
           >
-            Start Free — No Card Needed
+            Start Free. No Card Needed
             <ArrowRight size={16} />
           </button>
         </div>

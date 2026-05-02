@@ -1,5 +1,29 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Map Postgres errors to the right HTTP status.
+// SQLSTATE class 23 = integrity constraint violations (CHECK, UNIQUE, NOT NULL, FK)
+// SQLSTATE class 22 = data exceptions (bad types, truncation, invalid input)
+// These are always caused by bad client input → 4xx, not 5xx.
+// Anything else (connection errors, deadlocks, internal failures) stays 500.
+//
+// PostgrestError.message already contains the constraint name for class-23 errors,
+// e.g. 'new row ... violates check constraint "crypto_signals_signal_type_check"'.
+function pgErrorResponse(error: { code?: string; message: string; details?: string | null }) {
+  const code = error.code ?? ''
+  const status =
+    code === '23505' ? 409 :                                  // unique_violation → Conflict
+    (code.startsWith('23') || code.startsWith('22')) ? 400 :  // integrity / data exception
+    500                                                        // unknown → Internal Server Error
+  return new Response(JSON.stringify({
+    error: error.message,
+    code: code || undefined,
+    details: error.details ?? undefined,
+  }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
@@ -29,6 +53,19 @@ Deno.serve(async (req) => {
 
   if (!rawDirection || !price) {
     return new Response(JSON.stringify({ error: 'Missing direction or price' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Hold signals are TPI-layer-only and must be inserted manually via SQL.
+  // The webhook only accepts Long/Short; reject Hold explicitly so it's visible in logs
+  // (without this, the normaliser below would silently coerce "hold" to "Short").
+  if (rawDirection.toLowerCase() === 'hold') {
+    return new Response(JSON.stringify({
+      error: 'Hold signals are not accepted via webhook. Insert manually via supabase/INSERT_HOLD_SIGNAL.sql.',
+      received: rawDirection,
+    }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     })
@@ -70,10 +107,7 @@ Deno.serve(async (req) => {
     .single()
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return pgErrorResponse(error)
   }
 
   // Fire email notification — non-blocking; failure doesn't affect the webhook response

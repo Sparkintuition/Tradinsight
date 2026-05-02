@@ -67,7 +67,7 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <>
         <p>
-          The strategy is coded in Pine Script on TradingView and fires signals based on a precise combination of technical conditions — not a single indicator, but multiple factors that must align simultaneously.
+          The strategy is coded in Pine Script on TradingView and fires signals based on a precise combination of technical conditions, not a single indicator but multiple factors that must align simultaneously.
         </p>
         <p>The core indicators that power the strategy are:</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2 not-prose">
@@ -78,8 +78,46 @@ const FAQ_ITEMS: FAQItem[] = [
           ))}
         </div>
         <p className="mt-3">
-          Each indicator captures a different dimension of market behavior — momentum, volatility, miner activity, holder profitability, trend strength. A signal only fires when the composite of these conditions crosses a defined threshold. This multi-factor approach is what filters out noise and produces high-conviction setups.
+          Each indicator captures a different dimension of market behavior: momentum, volatility, miner activity, holder profitability, trend strength. A signal only fires when the composite of these conditions crosses a defined threshold. This multi-factor approach is what filters out noise and produces high-conviction setups.
         </p>
+      </>
+    ),
+  },
+  {
+    category: 'signals',
+    icon: <Shield size={16} />,
+    question: "What is a Hold signal and when is it used?",
+    answer: (
+      <>
+        <p>
+          Hold is a system-level exit signal. When a Hold fires, the active Long or Short position is closed at the Hold's price, and capital moves to cash or stablecoins. Users stay in cash until the next high-conviction Long or Short setup appears.
+        </p>
+        <p>
+          Hold is not a passive "wait and see" signal. It is an active risk decision. A deliberate move out of the market when conditions deteriorate.
+        </p>
+        <p>A Hold is triggered by a combination of two factors:</p>
+        <div className="space-y-3 mt-2 not-prose">
+          <div className="bg-[#0F172A]/80 border border-[#1F2937] rounded-xl p-4">
+            <p className="text-white text-xs font-semibold mb-1.5">Indicator-driven</p>
+            <p className="text-gray-400 text-xs leading-relaxed">
+              When the TPI components shift to negative or conflicting readings. The medium-term trend, the value indicator, or both stop supporting a directional position, and the system loses its conviction edge.
+            </p>
+          </div>
+          <div className="bg-[#0F172A]/80 border border-[#1F2937] rounded-xl p-4">
+            <p className="text-white text-xs font-semibold mb-1.5">Macro context</p>
+            <p className="text-gray-400 text-xs leading-relaxed">
+              When external events introduce uncertainty that the indicators alone cannot capture. Exchange collapses, regulatory shocks, tariff events, broad liquidation cascades. In those moments, sitting in cash protects capital better than any directional bet.
+            </p>
+          </div>
+        </div>
+        <p className="mt-3">
+          Hold signals are issued manually after careful review of both layers. They are infrequent and typically only appear during significant market turbulence. The cumulative balance on the dashboard reflects the closed position's profit or loss at the moment Hold fires.
+        </p>
+        <div className="bg-cyan-500/8 border border-cyan-500/20 rounded-xl px-4 py-3 not-prose mt-2">
+          <p className="text-cyan-300 text-xs leading-relaxed">
+            The best trade is sometimes no trade. Hold is the system's way of saying: protect what you have, wait for clarity.
+          </p>
+        </div>
       </>
     ),
   },
@@ -90,7 +128,7 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <>
         <p>
-          TPI stands for Trend Positioning Index. It is a separate confirmation layer that sits on top of the strategy signals — its job is to validate whether market conditions are genuinely favorable before acting on a signal.
+          TPI stands for Trend Positioning Index. It is a separate confirmation layer that sits on top of the strategy signals. Its job is to validate whether market conditions are genuinely favorable before acting on a signal.
         </p>
         <p>The TPI has two independent components:</p>
         <div className="space-y-3 mt-2 not-prose">
@@ -103,12 +141,12 @@ const FAQ_ITEMS: FAQItem[] = [
           <div className="bg-[#0F172A]/80 border border-[#1F2937] rounded-xl p-4">
             <p className="text-white text-xs font-semibold mb-1.5">Value Indicator (Long Term)</p>
             <p className="text-gray-400 text-xs leading-relaxed">
-              Determines the relative value of BTC at a given moment using a combination of technical, fundamental, and sentiment indicators. It provides long-term market cycle context — whether BTC is historically cheap, fairly valued, or expensive — which informs how aggressively to act on a signal.
+              Determines the relative value of BTC at a given moment using a combination of technical, fundamental, and sentiment indicators. It provides long-term market cycle context (whether BTC is historically cheap, fairly valued, or expensive), which informs how aggressively to act on a signal.
             </p>
           </div>
         </div>
         <p className="mt-3">
-          When the strategy fires a signal but the TPI disagrees, we do not act. We wait. This is the core discipline that separates Tradinsight from a simple signal service.
+          When the strategy fires a signal but the TPI disagrees, we do not act. When the TPI deteriorates while a position is already open, we exit via Hold. Both directions of that decision matter. This is the core discipline that separates Tradinsight from a simple signal service.
         </p>
       </>
     ),
@@ -116,22 +154,22 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     category: 'signals',
     icon: <Zap size={16} />,
-    question: "Why does Tradinsight only provide entry signals — no take profit or stop loss?",
+    question: "Does Tradinsight provide exits, take profit, or stop loss?",
     answer: (
       <>
         <p>
-          Deliberate design choice, not a limitation.
+          Tradinsight provides entries through Long and Short signals. We do not provide fixed take-profit or stop-loss levels. Those depend on your personal risk tolerance, position size, and time horizon, all of which only you can decide.
         </p>
         <p>
-          Every trader has a different risk appetite, portfolio size, time horizon, and tolerance for drawdowns. A stop loss that makes sense for someone with 5% of their net worth in BTC is the wrong number for someone with 50%. Providing fixed exit levels would create a false sense of precision and push users into decisions that don't fit their situation.
+          There is one exception. <span className="text-white font-medium">Hold signals act as system-level exits</span>. When the system loses conviction in the prevailing direction (through indicator shifts or macro shock) a Hold closes the open position and moves capital to cash. This is not a fixed take-profit rule. It is a discretionary risk decision that the system makes on your behalf.
         </p>
         <p>
-          What Tradinsight does is identify <span className="text-white font-medium">when</span> a high-probability opportunity exists — the entry. What you do with it from there should reflect your own risk management framework:
+          Between signals, what you do with your position remains your decision. The system gives you the entry, the direction, and when conditions deteriorate, the exit via Hold. Everything in between is yours:
         </p>
         <div className="space-y-2 mt-2 not-prose">
           {[
             'Position size based on your portfolio allocation',
-            'Stop loss placed at a level meaningful to your risk tolerance',
+            'Personal stop loss placed at a level meaningful to your risk tolerance',
             'Take profit targets based on your investment horizon',
             'Partial exits if you prefer to scale out of positions',
           ].map((item, i) => (
@@ -142,7 +180,7 @@ const FAQ_ITEMS: FAQItem[] = [
           ))}
         </div>
         <p className="mt-3">
-          The strategy has been tested without exits and still generates strong returns — which speaks to the quality of the entries. With disciplined personal risk management, performance improves further.
+          The strategy has been tested without exits and still generates strong returns. Hold signals add a protective layer on top of that, preserving capital during periods when no directional trade carries a real edge.
         </p>
       </>
     ),
@@ -154,10 +192,10 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <>
         <p>
-          Tradinsight generates approximately 5-6 signals per year. Some periods may have more, others fewer — it depends entirely on whether market conditions meet the system criteria. There is no artificial signal generation to keep users engaged.
+          Tradinsight generates approximately 5 to 6 entry signals per year (Long or Short), plus occasional Hold signals during significant market turbulence. Some periods may have more activity, others fewer. It depends entirely on whether market conditions meet the system criteria. There is no artificial signal generation to keep users engaged.
         </p>
         <p>
-          During quiet periods — which can last weeks or months — the system is not idle. It is monitoring. The TPI is being updated, market conditions are being tracked, and the moment conditions align the signal fires immediately for premium users.
+          During quiet periods (which can last weeks or months) the system is not idle. It is monitoring. The TPI is being updated, market conditions are being tracked, and the moment conditions align the signal fires immediately for premium users.
         </p>
         <p>
           This low frequency is the edge, not a weakness. Overtrading is one of the primary reasons most retail traders lose money. By waiting for high-conviction setups, you avoid the noise that destroys returns.
@@ -180,13 +218,13 @@ const FAQ_ITEMS: FAQItem[] = [
           This is a philosophical and empirical choice rooted in how the crypto market actually behaves.
         </p>
         <p>
-          The vast majority of cryptocurrencies are highly correlated to BTC. When BTC goes up, altcoins generally go up. When BTC goes down, altcoins go down harder. This high correlation makes broad portfolio diversification within crypto largely ineffective — you are not reducing risk, you are just adding complexity and noise.
+          The vast majority of cryptocurrencies are highly correlated to BTC. When BTC goes up, altcoins generally go up. When BTC goes down, altcoins go down harder. This high correlation makes broad portfolio diversification within crypto largely ineffective. You are not reducing risk, you are just adding complexity and noise.
         </p>
         <p>
           BTC also has a fundamental advantage: it is the most liquid, most established, and historically one of the highest-performing assets in the space. It has cleaner price structure, deeper on-chain data, and is the asset our system has been developed and tested on since 2018.
         </p>
         <p>
-          There are exceptions — some altcoins decorrelate during certain market phases. We have strategies for other coins in development and may introduce them in future versions of Tradinsight. For now, the focus on BTC is intentional and keeps the system precise.
+          There are exceptions. Some altcoins decorrelate during certain market phases. We have strategies for other coins in development and may introduce them in future versions of Tradinsight. For now, the focus on BTC is intentional and keeps the system precise.
         </p>
       </>
     ),
@@ -204,7 +242,7 @@ const FAQ_ITEMS: FAQItem[] = [
           {[
             { title: 'Signal frequency', desc: 'We would rather miss an opportunity than enter a low-conviction trade.' },
             { title: 'TPI confirmation', desc: 'Even strong strategy signals are skipped if the macro environment disagrees.' },
-            { title: 'Entries only', desc: 'We give you the entry. Managing your downside is your responsibility — because only you know your risk tolerance.' },
+            { title: 'Entries plus Hold', desc: 'We give you the entry, the direction, and the system-level exit via Hold when conditions deteriorate. Day-to-day risk management between those points is yours.' },
             { title: 'Transparency', desc: 'We show every past signal, including ones that did not work. No cherry-picking.' },
           ].map((item, i) => (
             <div key={i} className="flex gap-3 bg-[#0F172A]/80 border border-[#1F2937] rounded-xl p-3.5">
@@ -223,10 +261,10 @@ const FAQ_ITEMS: FAQItem[] = [
     answer: (
       <>
         <p>
-          The TPI is updated manually on a regular basis. Each component — the Medium Term Trend Indicator and the Value Indicator — is calculated from a set of underlying indicators that are tracked across TradingView, on-chain data sources, and macro indices.
+          The TPI is updated manually on a regular basis. Each component (the Medium Term Trend Indicator and the Value Indicator) is calculated from a set of underlying indicators tracked across TradingView, on-chain data sources, and macro indices.
         </p>
         <p>
-          The final TPI state (Positive, Neutral, or Negative) is derived from the aggregate score of all inputs. It does not change daily — these are slow-moving, high-conviction readings that reflect the broader market environment, not short-term price fluctuations.
+          The final TPI state (Positive, Neutral, or Negative) is derived from the aggregate score of all inputs. It does not change daily. These are slow-moving, high-conviction readings that reflect the broader market environment, not short-term price fluctuations.
         </p>
         <p>
           Premium members can always see the current TPI state on their dashboard. When it changes meaningfully, it is updated promptly.
@@ -244,7 +282,7 @@ const FAQ_ITEMS: FAQItem[] = [
           This depends on how far price has moved since the signal fired.
         </p>
         <p>
-          Since Tradinsight signals target major BTC trends — not short-term moves — the entry window is typically wider than in a day-trading context. A trend that runs for weeks or months often has a reasonable entry range even a day or two after the signal fires.
+          Since Tradinsight signals target major BTC trends, not short-term moves, the entry window is typically wider than in a day-trading context. A trend that runs for weeks or months often has a reasonable entry range even a day or two after the signal fires.
         </p>
         <p>
           That said, there is no universal answer. Some signals move quickly, others consolidate for a while before trending. Our recommendation:
@@ -278,7 +316,7 @@ const FAQ_ITEMS: FAQItem[] = [
           All trading and investment decisions are made entirely by you. Past performance of the strategy does not guarantee future results. Cryptocurrency markets are highly volatile and you can lose money.
         </p>
         <p>
-          Use Tradinsight as one input in your decision-making process — never as a full replacement for your own judgment and risk management.
+          Use Tradinsight as one input in your decision-making process, never as a full replacement for your own judgment and risk management.
         </p>
       </>
     ),
@@ -337,7 +375,7 @@ export function MethodologyPage({ onNavigateDashboard, onUnlockPremium }: Method
             How Tradinsight Works
           </h1>
           <p className="text-gray-400 leading-relaxed">
-            Everything behind the strategy, the TPI system, and the reasoning behind every signal. Read this once — then trust the data.
+            Everything behind the strategy, the TPI system, and the reasoning behind every signal. Read this once, then trust the data.
           </p>
         </div>
 
@@ -374,7 +412,7 @@ export function MethodologyPage({ onNavigateDashboard, onUnlockPremium }: Method
         <div className="mt-10 rounded-2xl border border-[#1F2937] bg-[#121826] p-6 text-center">
           <p className="text-gray-500 text-xs leading-relaxed">
             Tradinsight is an informational tool. All signals are based on a systematic methodology and do not constitute financial advice.
-            Past performance does not guarantee future results. The entry is the system's job. Managing your downside is yours.
+            Past performance does not guarantee future results. The entries and Hold exits are the system's job. Position sizing, stop placement, and personal risk management are yours.
           </p>
           <button
             onClick={onNavigateDashboard}
